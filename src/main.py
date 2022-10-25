@@ -1,38 +1,19 @@
-import os
 import supervisely as sly
 
 import globals as g
 
-import project_type.image as image
-import project_type.video as video
-import project_type.volume as volume
-import project_type.pointcloud as pointcloud
-import project_type.pointcloud_episodes as pointcloud_episodes
 
 @g.my_app.callback("clone-data")
 @sly.timeit
 def clone_data(api: sly.Api, task_id, context, state, app_logger):
-    project = api.project.get_info_by_id(g.PROJECT_ID)
-    project_meta_json = api.project.get_meta(project.id)
-    project_meta = sly.ProjectMeta.from_json(data=project_meta_json)
-    project_type = project_meta.project_type
-    
-    
-    datasets = api.dataset.get_list(project.id)
-    dataset_ids = [dataset.id for dataset in datasets]
-    
-    if project_type == str(sly.ProjectType.IMAGES):
-        image.clone()
-    elif project_type == str(sly.ProjectType.VIDEOS):
-        video.clone()
-    elif project_type == str(sly.ProjectType.VOLUMES):
-        volume.clone()
-    elif project_type == str(sly.ProjectType.POINT_CLOUDS):
-        pointcloud.clone()
-    elif project_type == str(sly.ProjectType.POINT_CLOUD_EPISODES):
-        pointcloud_episodes.clone()
+    if not g.DATASET_ID:
+        project = api.project.get_info_by_id(g.PROJECT_ID)
+        api.project.clone_advanced(id=project.id, dst_workspace_id=g.DEST_WORKSPACE_ID, dst_name=project.name)
     else:
-        raise NotImplementedError("Unknown project type: {}".format(project_type))
+        dataset = api.dataset.get_info_by_id(id=g.DATASET_ID)
+        ds_name = api.dataset.get_free_name(parent_id=g.DEST_PROJECT_ID, name=dataset.name)
+        api.dataset.copy(dst_project_id=g.DEST_PROJECT_ID, id=g.DATASET_ID, new_name=ds_name)
+    g.my_app.stop()
 
 
 def main():
@@ -45,8 +26,6 @@ def main():
         }
     )
 
-    data = {}
-    state = {}
     g.my_app.run(initial_events=[{"command": "clone-data"}])
 
 

@@ -3,7 +3,7 @@
         <sly-icon slot="icon" :options="{ color: '#2cd26e', bgColor: '#d8f8e7', rounded: false }">
             <i class="zmdi zmdi-collection-folder-image"></i>
         </sly-icon>
-        <sly-select-team-workspace :team-id.sync="state.teamId" :workspace-id.sync="state.workspaceId" />
+        <sly-select-team-workspace :team-id.sync="context.teamId" :workspace-id.sync="state.workspaceId" :options="{ showTeam: false }" />
         <sly-select-project :workspace-id="state.workspaceId" :project-id.sync="state.projectId" />
     </sly-field>
     <div>

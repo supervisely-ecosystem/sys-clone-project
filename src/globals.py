@@ -11,9 +11,9 @@ print(f"App root directory: {app_root_directory}")
 sly.logger.info(f'PYTHONPATH={os.environ.get("PYTHONPATH", "")}')
 
 # order matters
-from dotenv import load_dotenv
-load_dotenv(os.path.join(app_root_directory, "sys-clone-project", "secret_debug.env"))
-load_dotenv(os.path.join(app_root_directory, "sys-clone-project", "debug.env"))
+# from dotenv import load_dotenv
+# load_dotenv(os.path.join(app_root_directory, "sys-clone-project", "secret_debug.env"))
+# load_dotenv(os.path.join(app_root_directory, "sys-clone-project", "debug.env"))
 
 api: sly.Api = sly.Api.from_env()
 my_app: AppService = AppService()
