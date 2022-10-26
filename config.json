@@ -16,7 +16,7 @@
   "task_location": "workspace_tasks",
   "isolate": true,
   "headless": true,
-  "icon": "",
+  "icon": "https://img.icons8.com/color/96/000000/copy--v1.png",
   "icon_background": "#FFFFFF",
   "context_menu": {
     "target": [
@@ -32,5 +32,5 @@
       "point_cloud_episodes_dataset"
     ]
   },
-  "poster": ""
+  "poster": "#"
 }
