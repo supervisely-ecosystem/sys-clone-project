@@ -1,18 +1,18 @@
 {
-  "name": "Export to Supervisely format",
+  "name": "Clone",
   "type": "app",
   "categories": [
     "images",
     "export"
   ],
-  "description": "images and JSON annotations",
+  "description": "Clone project or dataset to selected workspace or project",
   "docker_image": "supervisely/base-py-sdk:6.68.6",
   "instance_version": "6.5.1",
   "main_script": "src/main.py",
   "modal_template": "src/modal.html",
   "modal_template_state": {
-    "download": "all",
-    "fixExtension": false
+    "projectName": "",
+    "datasetName": ""
   },
   "task_location": "workspace_tasks",
   "isolate": true,
@@ -21,9 +21,18 @@
   "icon_background": "#FFFFFF",
   "context_menu": {
     "target": [
-      "images_project"
+      "images_project",
+      "videos_project",
+      "point_cloud_project",
+      "volumes_project",
+      "point_cloud_episodes_project",
+      "images_dataset",
+      "videos_dataset",
+      "point_cloud_dataset",
+      "volumes_dataset",
+      "point_cloud_episodes_dataset"
     ],
-    "context_root": "Download as"
+    "context_root": "System apps"
   },
   "poster": "https://user-images.githubusercontent.com/106374579/186665737-ec3da9cc-193f-43ee-85db-a6f802b2dfe4.png"
 }
