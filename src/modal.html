@@ -3,18 +3,18 @@
         <sly-icon slot="icon" :options="{ color: '#2cd26e', bgColor: '#d8f8e7', rounded: false }">
             <i class="zmdi zmdi-collection-folder-image"></i>
         </sly-icon>
-        <sly-select-team-workspace :team-id.sync="context.teamId" :workspace-id.sync="state.workspaceId" :options="{ showTeam: false }" v-if="!context.datasetId"/>
-        <sly-select-project :workspace-id="state.workspaceId" :project-id.sync="state.projectId" v-if="context.datasetId"/>
+        <sly-select-team-workspace :team-id.sync="context.teamId" :workspace-id.sync="state.workspaceId" :options="{ showTeam: false }" v-if="!context.slyDatasetId"/>
+        <sly-select-project :workspace-id="state.workspaceId" :project-id.sync="state.projectId" v-if="context.slyDatasetId"/>
     </sly-field>
     
-    <div v-if="!context.datasetId">
+    <div v-if="!context.slyDatasetId">
         <sly-field title="Result Project Name"
             description="Enter project name manually (optional) or keep empty to generate it automatically based on the current name.">
         </sly-field>
         <el-input placeholder="Enter Project Name" v-model="state.projectName"></el-input>
     </div>
 
-    <div v-if="context.datasetId">
+    <div v-if="context.slyDatasetId">
         <sly-field title="Result Dataset Name"
             description="Enter dataset name manually (optional) or keep empty to generate it automatically based on the current name.">
         </sly-field>
