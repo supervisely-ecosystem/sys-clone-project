@@ -6,9 +6,11 @@ import globals as g
 @g.my_app.callback("clone-data")
 @sly.timeit
 def clone_data(api: sly.Api, task_id, context, state, app_logger):
+    project = api.project.get_info_by_id(g.PROJECT_ID)
     if not g.DATASET_ID:
-        project_name = g.PROJECT_NAME or api.project.get_info_by_id(g.PROJECT_ID).name
+        project_name = g.PROJECT_NAME or project.name
         api.project.clone_advanced(id=g.PROJECT_ID, dst_workspace_id=g.DEST_WORKSPACE_ID, dst_name=project_name)
+        api.app.set_output_project(task_id=g.TASK_ID, project_id=project.id, project_name=project_name)
     else:
         if not g.DATASET_NAME:
             dataset = api.dataset.get_info_by_id(id=g.DATASET_ID)
@@ -16,6 +18,7 @@ def clone_data(api: sly.Api, task_id, context, state, app_logger):
         else:
             ds_name = g.DATASET_NAME
         api.dataset.copy(dst_project_id=g.DEST_PROJECT_ID, id=g.DATASET_ID, new_name=ds_name)
+        api.app.set_output_project(task_id=g.TASK_ID, project_id=project.id, project_name=project.name)
     g.my_app.stop()
 
 
