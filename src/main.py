@@ -15,7 +15,7 @@ def clone_data(api: sly.Api, task_id, context, state, app_logger):
     project_meta = sly.ProjectMeta.from_json(data=project_meta_json)
     project_type = project_meta.project_type
     dst_project_name = g.PROJECT_NAME or project.name
-    
+
     if not g.DEST_PROJECT_ID:
         dst_project = api.project.create(
             workspace_id=g.DEST_WORKSPACE_ID,
@@ -24,10 +24,11 @@ def clone_data(api: sly.Api, task_id, context, state, app_logger):
             description=project.description,
             change_name_if_conflict=True,
         )
+
+        api.project.update_meta(id=dst_project.id, meta=project_meta)
     else:
         dst_project = project
-        
-        api.project.update_meta(id=dst_project.id, meta=project_meta)
+
 
     if g.DATASET_ID:
         datasets = [api.dataset.get_info_by_id(g.DATASET_ID)]
@@ -39,13 +40,13 @@ def clone_data(api: sly.Api, task_id, context, state, app_logger):
     elif project_type == str(sly.ProjectType.VIDEOS):
         video.clone(api=api, project_id=dst_project.id, datasets=datasets, project_meta=project_meta)
     elif project_type == str(sly.ProjectType.VOLUMES):
-        volume.clone()
+        volume.clone(api=api, project_id=dst_project.id, datasets=datasets, project_meta=project_meta)
     elif project_type == str(sly.ProjectType.POINT_CLOUDS):
-        pointcloud.clone()
+        pointcloud.clone(api=api, project_id=dst_project.id, datasets=datasets, project_meta=project_meta)
     elif project_type == str(sly.ProjectType.POINT_CLOUD_EPISODES):
-        pointcloud_episodes.clone()
+        pointcloud_episodes.clone(api=api, project_id=dst_project.id, datasets=datasets, project_meta=project_meta)
     else:
-        raise NotImplementedError("Unknown project type: {}".format(project_type))
+        raise NotImplementedError(f"Unknown project type: {project_type}")
 
     api.app.set_output_project(task_id=g.TASK_ID, project_id=dst_project.id, project_name=dst_project_name)
     g.my_app.stop()
