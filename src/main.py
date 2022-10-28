@@ -15,12 +15,11 @@ def clone_data(api: sly.Api, task_id, context, state, app_logger):
     project_meta_json = api.project.get_meta(project.id)
     project_meta = sly.ProjectMeta.from_json(data=project_meta_json)
     project_type = project_meta.project_type
-    dst_project_name = g.PROJECT_NAME or project.name
 
     if not g.DEST_PROJECT_ID:
         dst_project = api.project.create(
             workspace_id=g.DEST_WORKSPACE_ID,
-            name=dst_project_name,
+            name=g.PROJECT_NAME or project.name,
             type=project.type,
             description=project.description,
             change_name_if_conflict=True,
@@ -31,7 +30,7 @@ def clone_data(api: sly.Api, task_id, context, state, app_logger):
         api.project.merge_metas(
             src_project_id=project.id, dst_project_id=dst_project.id
         )
-
+        
     if g.DATASET_ID:
         datasets = [api.dataset.get_info_by_id(g.DATASET_ID)]
     else:
@@ -71,7 +70,7 @@ def clone_data(api: sly.Api, task_id, context, state, app_logger):
         raise NotImplementedError(f"Unknown project type: {project_type}")
 
     api.app.set_output_project(
-        task_id=g.TASK_ID, project_id=dst_project.id, project_name=dst_project_name
+        task_id=g.TASK_ID, project_id=dst_project.id, project_name=dst_project.name
     )
     g.my_app.stop()
 
