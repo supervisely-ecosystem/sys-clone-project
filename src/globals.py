@@ -15,7 +15,7 @@ sly.logger.info(f'PYTHONPATH={os.environ.get("PYTHONPATH", "")}')
 # load_dotenv(os.path.join(app_root_directory, "sys-clone-project", "debug.env"))
 
 api: sly.Api = sly.Api.from_env()
-my_app: AppService = AppService()
+my_app: AppService = AppService(ignore_task_id=True)
 
 TASK_ID = os.environ.get("TASK_ID", None)
 
