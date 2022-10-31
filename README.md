@@ -1,6 +1,6 @@
 <div align="center" markdown>
 
-<img src="https://user-images.githubusercontent.com/48913536/198350325-65827223-2f9f-4c3d-8153-d513fc272760.png"/>
+<img src="https://user-images.githubusercontent.com/48913536/199025849-6e3fdfd5-3f45-463e-b7ea-71c22f42134d.png"/>
 
 # Clone Project
 
