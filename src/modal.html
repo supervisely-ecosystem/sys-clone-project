@@ -1,12 +1,15 @@
 <div>
-    <sly-field title="Output Project" description="Current project will be cloned to selected destination.">
-        <sly-icon slot="icon" :options="{ color: '#2cd26e', bgColor: '#d8f8e7', rounded: false }">
-            <i class="zmdi zmdi-collection-folder-image"></i>
-        </sly-icon>
-        <sly-select-team-workspace :team-id.sync="context.teamId" :workspace-id.sync="state.workspaceId" :options="{ showTeam: false }"/>
-        <sly-select-project :workspace-id="state.workspaceId" :project-id.sync="state.projectId" v-if="context.slyDatasetId"/>
+    <sly-field title="Output Project" description="Current project will be cloned to selected destination."
+        v-if="!context.slyDatasetId">
+        <sly-select-team-workspace :team-id.sync="state.teamId" :workspace-id.sync="state.workspaceId" />
     </sly-field>
-    
+
+    <sly-field title="Output Dataset" description="Current dataset will be cloned to selected destination."
+        v-if="context.slyDatasetId">
+        <sly-select-team-workspace :team-id.sync="state.teamId" :workspace-id.sync="state.workspaceId" />
+        <sly-select-project :workspace-id="state.workspaceId" :project-id.sync="state.projectId" />
+    </sly-field>
+
     <div v-if="!context.slyDatasetId">
         <sly-field title="Result Project Name"
             description="Enter project name manually (optional) or keep empty to generate it automatically based on the current name.">
@@ -20,5 +23,4 @@
         </sly-field>
         <el-input placeholder="Enter Dataset Name" v-model="state.datasetName"></el-input>
     </div>
-
 </div>
