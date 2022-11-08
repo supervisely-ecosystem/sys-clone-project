@@ -24,6 +24,7 @@ WORKSPACE_ID = os.environ.get("CONTEXT_WORKSPACEID", None)
 PROJECT_ID = os.environ.get("CONTEXT_PROJECTID", None)
 DATASET_ID = os.environ.get("CONTEXT_DATASETID", None)
 
+DEST_TEAM_ID = os.environ.get("modal.state.teamId", None)
 DEST_WORKSPACE_ID = os.environ.get("modal.state.workspaceId", None)
 DEST_PROJECT_ID = os.environ.get("modal.state.projectId", None)
 
