@@ -1,14 +1,12 @@
 <div>
-    <sly-field title="Output Project" description="Current project will be cloned to selected destination."
-        v-if="!context.slyDatasetId">
+    <div v-if="!context.slyDatasetId">
         <sly-select-team-workspace :team-id.sync="state.teamId" :workspace-id.sync="state.workspaceId" />
-    </sly-field>
+    </div>
 
-    <sly-field title="Output Dataset" description="Current dataset will be cloned to selected destination."
-        v-if="context.slyDatasetId">
+    <div v-if="context.slyDatasetId">
         <sly-select-team-workspace :team-id.sync="state.teamId" :workspace-id.sync="state.workspaceId" />
         <sly-select-project :workspace-id="state.workspaceId" :project-id.sync="state.projectId" />
-    </sly-field>
+    </div>
 
     <div v-if="!context.slyDatasetId">
         <sly-field title="Result Project Name"
@@ -20,7 +18,7 @@
     <div v-if="context.slyDatasetId">
         <sly-field title="Result Dataset Name"
             description="Enter dataset name manually (optional) or keep empty to generate it automatically based on the current name.">
+            <el-input placeholder="Enter Dataset Name" v-model="state.datasetName"></el-input>
         </sly-field>
-        <el-input placeholder="Enter Dataset Name" v-model="state.datasetName"></el-input>
     </div>
 </div>
