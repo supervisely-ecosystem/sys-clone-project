@@ -38,7 +38,7 @@ App supports all project types:
 
 **Step 2.** Select destination and press the Run button in the modal window
 
-<img src="https://user-images.githubusercontent.com/48913536/198350430-1ebc27bf-331f-4d3b-9ade-5804e97752b4.png" width="70%" style='padding-top: 10px'>  
+<img src="https://user-images.githubusercontent.com/48913536/200548844-05437639-a320-47c2-8f8f-86a7474b87c1.png" width="50%" style='padding-top: 10px'> 
 
 **Step 3.** After running the application, you will be redirected to the Tasks page. Once application processing has finished, your project will become available. Click on the project name to open it.
 
