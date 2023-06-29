@@ -6,7 +6,8 @@ import globals as g
 
 
 def clone(api: sly.Api, project_id, datasets, project_meta):
-    key_id_map = KeyIdMap()
+    key_id_map_initial = KeyIdMap()
+    key_id_map_new = KeyIdMap()
     for dataset in datasets:
         dst_dataset = api.dataset.create(
             project_id=project_id,
@@ -30,11 +31,11 @@ def clone(api: sly.Api, project_id, datasets, project_meta):
 
                 ann_json = api.pointcloud.annotation.download(pointcloud_id=pcd_info.id)
                 ann = sly.PointcloudAnnotation.from_json(
-                    data=ann_json, project_meta=project_meta, key_id_map=KeyIdMap()
+                    data=ann_json, project_meta=project_meta, key_id_map=key_id_map_initial
                 )
 
                 api.pointcloud.annotation.append(
-                    pointcloud_id=new_pcd_info.id, ann=ann, key_id_map=key_id_map
+                    pointcloud_id=new_pcd_info.id, ann=ann, key_id_map=key_id_map_new
                 )
 
                 rel_images = api.pointcloud.get_list_related_images(id=pcd_info.id)
