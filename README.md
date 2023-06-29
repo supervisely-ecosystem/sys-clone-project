@@ -19,24 +19,24 @@
 
 # Overview
 
-Clone project or dataset to selected destination with annotations and metadata.
+Clone project or dataset to a selected destination with annotations and metadata.
 
-App supports all project types: 
+The app supports all project types: 
 * `images`
 * `videos`
 * `volumes`
-* `pointclouds`
-* `pointcloud episodes`
+* `point clouds`
+* `point cloud episodes`
 
 <img src="https://user-images.githubusercontent.com/48913536/198350370-629668a6-815f-49bd-b878-0940bf7babd7.png" width="80%" style='padding-top: 10px'>  
 
 # How to Run
 
-**Step 1.** Run app from Ecosystem or context project/dataset context menu.
+**Step 1.** Run the app from the Ecosystem or context project/dataset context menu.
 
 <img src="https://user-images.githubusercontent.com/48913536/198350350-0c7328a5-b2f7-4370-8c63-b7c5960c375c.png" width="80%" style='padding-top: 10px'>  
 
-**Step 2.** Select destination and press the Run button in the modal window
+**Step 2.** Select a destination and press the Run button in the modal window
 
 <img src="https://user-images.githubusercontent.com/48913536/200548844-05437639-a320-47c2-8f8f-86a7474b87c1.png" width="50%" style='padding-top: 10px'> 
 
