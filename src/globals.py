@@ -21,7 +21,7 @@ TASK_ID = os.environ.get("TASK_ID", None)
 
 TEAM_ID = sly.env.team_id(raise_not_found=False)
 WORKSPACE_ID = sly.env.workspace_id(raise_not_found=False)
-PROJECT_ID = sly.env.project_id(raise_not_found=False
+PROJECT_ID = sly.env.project_id(raise_not_found=False)
 DATASET_ID = sly.env.dataset_id(raise_not_found=False)
 
 DEST_TEAM_ID = os.environ.get("modal.state.teamId", None)
