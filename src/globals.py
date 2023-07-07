@@ -29,4 +29,8 @@ DEST_WORKSPACE_ID = os.environ.get("modal.state.workspaceId", None)
 DEST_PROJECT_ID = os.environ.get("modal.state.projectId", None)
 
 PROJECT_NAME = os.environ.get("modal.state.projectName", None)
+if PROJECT_NAME is not None:
+    PROJECT_NAME = PROJECT_NAME.replace("\\", "").replace("|", "").replace("/", "")
 DATASET_NAME = os.environ.get("modal.state.datasetName", None)
+if DATASET_NAME is not None:
+    DATASET_NAME = DATASET_NAME.replace("\\", "").replace("|", "").replace("/", "")

@@ -11,14 +11,22 @@
     <div v-if="!context.slyDatasetId">
         <sly-field title="Result Project Name"
             description="Enter project name manually (optional) or keep empty to generate it automatically based on the current name.">
+            <el-input placeholder="Enter Project Name" v-model="state.projectName"></el-input>
+            <div v-if="/[\/|\\]/.test(state.projectName)" class="mt5 mb5">
+                <i class="zmdi zmdi-alert-triangle" style="color: #ed4242"></i>
+                <span style="color: #ed4242;">Please replace invalid symbols in the project name (|, /, or \).</span>
+            </div>
         </sly-field>
-        <el-input placeholder="Enter Project Name" v-model="state.projectName"></el-input>
     </div>
 
     <div v-if="context.slyDatasetId">
         <sly-field title="Result Dataset Name"
             description="Enter dataset name manually (optional) or keep empty to generate it automatically based on the current name.">
             <el-input placeholder="Enter Dataset Name" v-model="state.datasetName"></el-input>
+            <div v-if="/[\/|\\]/.test(state.datasetName)" class="mt5 mb5">
+                <i class="zmdi zmdi-alert-triangle" style="color: #ed4242"></i>
+                <span style="color: #ed4242;">Please replace invalid symbols in the dataset name (|, /, or \).</span>
+            </div>
         </sly-field>
     </div>
 </div>
