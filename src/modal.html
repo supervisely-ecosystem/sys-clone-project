@@ -11,8 +11,10 @@
     <div v-if="!context.slyDatasetId">
         <sly-field title="Result Project Name"
             description="Enter project name manually (optional) or keep empty to generate it automatically based on the current name.">
+            <el-input placeholder="Enter Project Name" v-model="state.projectName"></el-input>
+            <i v-if="/[\/|\\]/.test(state.projectName)" class="zmdi zmdi-alert-triangle" style="color: #962121"></i>
+            <span v-if="/[\/|\\]/.test(state.projectName)" style="color: #962121;">Project name contains one of this symbols: \ | / . Please remove this symbols from project name.</span>
         </sly-field>
-        <el-input placeholder="Enter Project Name" v-model="state.projectName"></el-input>
     </div>
 
     <div v-if="context.slyDatasetId">
