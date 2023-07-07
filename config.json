@@ -22,7 +22,7 @@
   "task_location": "workspace_tasks",
   "isolate": true,
   "headless": true,
-  "icon": "https://img.icons8.com/color/96/000000/copy--v1.png",
+  "icon": "media/icon.png",
   "icon_background": "#FFFFFF",
   "context_menu": {
     "target": [
