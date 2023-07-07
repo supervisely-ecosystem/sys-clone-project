@@ -1,4 +1,5 @@
 import os
+import re
 import sys
 import supervisely as sly
 from supervisely.app.v1.app_service import AppService
@@ -29,4 +30,6 @@ DEST_WORKSPACE_ID = os.environ.get("modal.state.workspaceId", None)
 DEST_PROJECT_ID = os.environ.get("modal.state.projectId", None)
 
 PROJECT_NAME = os.environ.get("modal.state.projectName", None)
+if PROJECT_NAME is not None:
+    PROJECT_NAME = PROJECT_NAME.replace("\\", "").replace("|", "").replace("/", "")
 DATASET_NAME = os.environ.get("modal.state.datasetName", None)
