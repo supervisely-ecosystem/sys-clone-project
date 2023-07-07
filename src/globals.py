@@ -1,5 +1,4 @@
 import os
-import re
 import sys
 import supervisely as sly
 from supervisely.app.v1.app_service import AppService
@@ -33,3 +32,5 @@ PROJECT_NAME = os.environ.get("modal.state.projectName", None)
 if PROJECT_NAME is not None:
     PROJECT_NAME = PROJECT_NAME.replace("\\", "").replace("|", "").replace("/", "")
 DATASET_NAME = os.environ.get("modal.state.datasetName", None)
+if DATASET_NAME is not None:
+    DATASET_NAME = DATASET_NAME.replace("\\", "").replace("|", "").replace("/", "")
