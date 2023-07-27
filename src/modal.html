@@ -19,7 +19,7 @@
       <sly-field
         class="mt20"
         title="Add to existing project"
-        description="Select, if you want to add current dataset in existing project"
+        description="Select, if you want to add current dataset to existing project"
       >
       </sly-field>
     </div>
@@ -31,7 +31,7 @@
     </div>
   </div>
 
-  <div v-if="!context.slyDatasetId">
+  <div v-if="!state.exist_project">
     <sly-field
       title="Result Project Name"
       description="Enter project name manually (optional) or keep empty to generate it automatically based on the current name."
@@ -50,7 +50,7 @@
     </sly-field>
   </div>
 
-  <div v-if="context.slyDatasetId">
+  <div v-if="state.exist_project">
     <sly-field
       title="Result Dataset Name"
       description="Enter dataset name manually (optional) or keep empty to generate it automatically based on the current name."
