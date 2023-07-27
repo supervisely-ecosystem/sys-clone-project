@@ -11,20 +11,18 @@
       :team-id.sync="state.teamId"
       :workspace-id.sync="state.workspaceId"
     />
-    <div v-if="state.exist_project">
+    <div v-if="state.existingProject">
       <sly-select-project
         :workspace-id="state.workspaceId"
         :project-id.sync="state.projectId"
       />
     </div>
-    <!-- <div class="fflex align-start"> -->
-    <el-checkbox v-model="state.exist_project" class="mt10"
+    <el-checkbox v-model="state.existingProject" class="mt10"
       >Add to existing project</el-checkbox
     >
-    <!-- </div> -->
   </div>
 
-  <div v-if="!state.exist_project">
+  <div v-if="!state.existingProject">
     <sly-field
       title="Result Project Name"
       description="Enter project name manually (optional) or keep empty to generate it automatically based on the current name."
@@ -43,7 +41,7 @@
     </sly-field>
   </div>
 
-  <div v-if="state.exist_project">
+  <div v-if="state.existingProject">
     <sly-field
       title="Result Dataset Name"
       description="Enter dataset name manually (optional) or keep empty to generate it automatically based on the current name."
