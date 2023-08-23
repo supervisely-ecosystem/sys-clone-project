@@ -16,7 +16,24 @@ def clone_data(api: sly.Api, task_id, context, state, app_logger):
     project_meta = sly.ProjectMeta.from_json(data=project_meta_json)
     project_type = project_meta.project_type
 
-    if not g.DEST_PROJECT_ID:
+    dst_project = None
+    if g.DEST_PROJECT_ID:
+        dst_project = api.project.get_info_by_id(g.DEST_PROJECT_ID)
+        if dst_project is None:
+            sly.logger.warn(
+                f"Destination project with id={g.DEST_PROJECT_ID} not found. "
+                f"New destination project will be created.",
+            )
+        elif dst_project.type != project.type:
+            sly.logger.warn(
+                f"Destination project type ({dst_project.type}) != source project type ({project.type}). "
+                f"New destination project will be created.",
+            )
+            dst_project = None
+        else:
+            api.project.merge_metas(project.id, dst_project.id)
+
+    if dst_project is None:
         dst_project = api.project.create(
             workspace_id=g.DEST_WORKSPACE_ID,
             name=g.PROJECT_NAME or project.name,
@@ -25,11 +42,6 @@ def clone_data(api: sly.Api, task_id, context, state, app_logger):
             change_name_if_conflict=True,
         )
         api.project.update_meta(id=dst_project.id, meta=project_meta)
-    else:
-        dst_project = api.project.get_info_by_id(g.DEST_PROJECT_ID)
-        api.project.merge_metas(
-            src_project_id=project.id, dst_project_id=dst_project.id
-        )
         
     if g.DATASET_ID:
         datasets = [api.dataset.get_info_by_id(g.DATASET_ID)]
