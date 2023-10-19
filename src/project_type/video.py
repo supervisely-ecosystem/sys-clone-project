@@ -39,6 +39,9 @@ def clone(api: sly.Api, project_id, datasets, project_meta):
             ann = sly.VideoAnnotation.from_json(
                 data=ann_json, project_meta=project_meta, key_id_map=key_id_map
             )
+
+            sly.logger.debug(f"New video info: {new_video_info}")
+            sly.logger.debug(f"Type of new video info: {type(new_video_info)}")
             api.video.annotation.append(
                 video_id=new_video_info.id, ann=ann, key_id_map=key_id_map
             )
