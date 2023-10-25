@@ -31,7 +31,14 @@ def clone_data(api: sly.Api, task_id, context, state, app_logger):
             )
             dst_project = None
         else:
-            api.project.merge_metas(project.id, dst_project.id)
+            try:
+                api.project.merge_metas(project.id, dst_project.id)
+            except Exception as e:
+                sly.logger.warn(
+                    f"Can not merge meta of source project and destination project: {str(e)}. "
+                    f"New destination project will be created."
+                )
+                dst_project = None
 
     if dst_project is None:
         dst_project = api.project.create(
