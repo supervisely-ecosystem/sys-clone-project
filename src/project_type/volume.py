@@ -38,16 +38,19 @@ def clone(api: sly.Api, project_id, datasets, project_meta):
                 data=ann_json, project_meta=project_meta, key_id_map=key_id_map
             )
 
+            import time
+
+            start = time.time()
             api.volume.annotation.append(
                 volume_id=new_volume_info.id, ann=ann, key_id_map=key_id_map
             )
 
             if ann.spatial_figures:
                 geometries = []
-                for sf in ann.spatial_figures:
-                    sf_id = key_id_map.get_figure_id(sf.key())
+                for sf in ann_json.get("spatialFigures"):
+                    sf_id = sf.get("id")
                     path = os.path.join(geometries_dir, f"{sf_id}.nrrd")
-                    api.volume.figure.download_sf_geometries([sf_id], [path])
+                    api.volume.figure.download_stl_meshes([sf_id], [path])
                     with open(path, "rb") as file:
                         geometry_bytes = file.read()
                     geometries.append(geometry_bytes)
@@ -56,6 +59,7 @@ def clone(api: sly.Api, project_id, datasets, project_meta):
                     ann.spatial_figures, geometries, key_id_map=key_id_map
                 )
                 del geometries
+                sly.logger.info(f"TIME SPENT ON ANN: {time.time() -  start}")
             progress.iter_done_report()
 
         sly.fs.remove_dir(geometries_dir)
