@@ -8,6 +8,8 @@ import globals as g
 def clone(api: sly.Api, project_id, datasets, project_meta):
     key_id_map = KeyIdMap()
     for dataset in datasets:
+        geometries_dir = f"geometries_{dataset.id}"
+        sly.fs.mkdir(geometries_dir)
         dst_dataset = api.dataset.create(
             project_id=project_id,
             name=g.DATASET_NAME or dataset.name,
@@ -36,14 +38,24 @@ def clone(api: sly.Api, project_id, datasets, project_meta):
                 data=ann_json, project_meta=project_meta, key_id_map=key_id_map
             )
 
-            if ann.spatial_figures:
-                for sf in ann.spatial_figures:
-                    api.volume.figure.load_sf_geometry(sf, key_id_map)
-
             api.volume.annotation.append(
-                volume_id=new_volume_info.id,
-                ann=ann,
-                key_id_map=key_id_map,
+                volume_id=new_volume_info.id, ann=ann, key_id_map=key_id_map
             )
 
+            if ann.spatial_figures:
+                geometries = []
+                for sf in ann.spatial_figures:
+                    sf_id = key_id_map.get_figure_id(sf.key())
+                    path = os.path.join(geometries_dir, f"{sf_id}.nrrd")
+                    api.volume.figure.download_sf_geometries([sf_id], [path])
+                    with open(path, "rb") as file:
+                        geometry_bytes = file.read()
+                    geometries.append(geometry_bytes)
+
+                api.volume.figure.upload_sf_geometry(
+                    ann.spatial_figures, geometries, key_id_map=key_id_map
+                )
+                del geometries
             progress.iter_done_report()
+
+        sly.fs.remove_dir(geometries_dir)
