@@ -38,9 +38,6 @@ def clone(api: sly.Api, project_id, datasets, project_meta):
                 data=ann_json, project_meta=project_meta, key_id_map=key_id_map
             )
 
-            import time
-
-            start = time.time()
             api.volume.annotation.append(
                 volume_id=new_volume_info.id, ann=ann, key_id_map=key_id_map
             )
@@ -59,7 +56,6 @@ def clone(api: sly.Api, project_id, datasets, project_meta):
                     ann.spatial_figures, geometries, key_id_map=key_id_map
                 )
                 del geometries
-                sly.logger.info(f"TIME SPENT ON ANN: {time.time() -  start}")
             progress.iter_done_report()
 
         sly.fs.remove_dir(geometries_dir)
