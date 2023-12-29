@@ -48,7 +48,7 @@ def clone(api: sly.Api, project_id, datasets, project_meta):
         for batch_anns, batch_ids in zip(sly.batched(ann_jsons), sly.batched(new_images_ids)):
             checked_ann_jsons = []
             for ann_json in batch_anns:
-                # convert to Annotation object and back to json to check/fix geometry correctness
+                # * do not remove: convert to sly and back to json to fix possible geometric errors
                 ann = sly.Annotation.from_json(ann_json, project_meta)
                 checked_ann_jsons.append(ann.to_json())
             api.annotation.upload_jsons(
