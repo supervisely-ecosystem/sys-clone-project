@@ -56,7 +56,12 @@ def clone_data(api: sly.Api, task_id, context, state, app_logger):
         datasets = api.dataset.get_list(project.id)
 
     if project_type == str(sly.ProjectType.IMAGES):
-        image.clone(api=api, project_id=dst_project.id, datasets=datasets)
+        image.clone(
+            api=api,
+            project_id=dst_project.id,
+            datasets=datasets,
+            project_meta=project_meta,
+        )
     elif project_type == str(sly.ProjectType.VIDEOS):
         video.clone(
             api=api,
