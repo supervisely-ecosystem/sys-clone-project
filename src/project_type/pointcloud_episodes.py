@@ -28,28 +28,29 @@ def clone(api: sly.Api, project_id, datasets, project_meta):
             total_cnt=len(pcd_episodes_infos),
         )
         for pcd_episode_info in pcd_episodes_infos:
-            new_pcd_episode_info = api.pointcloud_episode.upload_hash(
-                dataset_id=dst_dataset.id,
-                name=pcd_episode_info.name,
-                hash=pcd_episode_info.hash,
-                meta=pcd_episode_info.meta,
-            )
+            if pcd_episode_info.hash:
+                new_pcd_episode_info = api.pointcloud_episode.upload_hash(
+                    dataset_id=dst_dataset.id,
+                    name=pcd_episode_info.name,
+                    hash=pcd_episode_info.hash,
+                    meta=pcd_episode_info.meta,
+                )
 
-            frame_to_pointcloud_ids[new_pcd_episode_info.meta["frame"]] = new_pcd_episode_info.id
-            
-            rel_images = api.pointcloud_episode.get_list_related_images(id=pcd_episode_info.id)
-            if len(rel_images) != 0:
-                rimg_infos = []
-                for rel_img in rel_images:
-                    rimg_infos.append(
-                        {
-                            ApiField.ENTITY_ID: new_pcd_episode_info.id,
-                            ApiField.NAME: rel_img[ApiField.NAME],
-                            ApiField.HASH: rel_img[ApiField.HASH],
-                            ApiField.META: rel_img[ApiField.META],
-                        }
-                    )
-                api.pointcloud_episode.add_related_images(rimg_infos)
+                frame_to_pointcloud_ids[new_pcd_episode_info.meta["frame"]] = new_pcd_episode_info.id
+                
+                rel_images = api.pointcloud_episode.get_list_related_images(id=pcd_episode_info.id)
+                if len(rel_images) != 0:
+                    rimg_infos = []
+                    for rel_img in rel_images:
+                        rimg_infos.append(
+                            {
+                                ApiField.ENTITY_ID: new_pcd_episode_info.id,
+                                ApiField.NAME: rel_img[ApiField.NAME],
+                                ApiField.HASH: rel_img[ApiField.HASH],
+                                ApiField.META: rel_img[ApiField.META],
+                            }
+                        )
+                    api.pointcloud_episode.add_related_images(rimg_infos)
             else:
                 sly.logger.warn(
                     f"{pcd_episode_info.name} have no hash. Item will be skipped."
