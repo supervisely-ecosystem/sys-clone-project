@@ -4,7 +4,20 @@ import progress
 import globals as g
 
 
-def clone(api: sly.Api, project_id, datasets, project_meta):
+def clone(api: sly.Api, project_id, datasets, project_meta: sly.ProjectMeta):
+    keep_classes = []
+    remove_classes = []
+    meta_has_any_shapes = False
+    for obj_cls in project_meta.obj_classes:
+        if obj_cls.geometry_type == sly.AnyGeometry:
+            meta_has_any_shapes = True
+        if obj_cls.geometry_type == sly.Cuboid:
+            remove_classes.append(obj_cls.name)
+            sly.logger.warn(
+                f"Class {obj_cls.name} has unsupported geometry type for images: Cuboid. It will be removed."
+            )
+        else:
+            keep_classes.append(obj_cls.name)
     for dataset in datasets:
         dst_dataset = api.dataset.create(
             project_id=project_id,
@@ -47,9 +60,27 @@ def clone(api: sly.Api, project_id, datasets, project_meta):
 
         for batch_anns, batch_ids in zip(sly.batched(ann_jsons), sly.batched(new_images_ids)):
             checked_ann_jsons = []
-            for ann_json in batch_anns:
+            for ann_json, img_id in zip(batch_anns, batch_ids):
                 # * do not remove: convert to sly and back to json to fix possible geometric errors
                 ann = sly.Annotation.from_json(ann_json, project_meta)
+                # * filter labels with Cuboid geometry
+                if len(remove_classes) > 0:
+                    if meta_has_any_shapes:
+                        ann_has_any_shapes = False
+                        keep_labels = []
+                        for label in ann.labels:
+                            if label.geometry.geometry_name() == sly.Cuboid.geometry_name():
+                                ann_has_any_shapes = True
+                                continue
+                            keep_labels.append(label)
+                        if ann_has_any_shapes:
+                            sly.logger.warn(
+                                f"Some labels on the image ID:{img_id} have unsupported geometry: "
+                                f"Cuboid. They will be removed."
+                            )
+                            ann = ann.clone(labels=keep_labels)
+                    else:
+                        ann = ann.filter_labels_by_classes(keep_classes)
                 checked_ann_jsons.append(ann.to_json())
             api.annotation.upload_jsons(
                 img_ids=batch_ids, ann_jsons=checked_ann_jsons, progress_cb=progress_cb
