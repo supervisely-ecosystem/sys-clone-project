@@ -52,6 +52,8 @@ def clone_data(api: sly.Api, task_id, context, state, app_logger):
         
     if g.DATASET_ID:
         datasets = [api.dataset.get_info_by_id(g.DATASET_ID)]
+    elif project_type == str(sly.ProjectType.IMAGES):
+        datasets = api.dataset.get_list(project.id, recursive=True)
     else:
         datasets = api.dataset.get_list(project.id)
 
