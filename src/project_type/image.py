@@ -8,6 +8,10 @@ def clone(api: sly.Api, project_id, datasets, project_meta: sly.ProjectMeta):
     keep_classes = []
     remove_classes = []
     meta_has_any_shapes = False
+    parent_ids_map = {}
+    for ds in datasets:
+        if ds.parent_id and ds.parent_id not in parent_ids_map:
+            parent_ids_map[ds.parent_id] = None
     for obj_cls in project_meta.obj_classes:
         if obj_cls.geometry_type == sly.AnyGeometry:
             meta_has_any_shapes = True
@@ -19,12 +23,19 @@ def clone(api: sly.Api, project_id, datasets, project_meta: sly.ProjectMeta):
         else:
             keep_classes.append(obj_cls.name)
     for dataset in datasets:
+        if dataset.parent_id in parent_ids_map:
+            parent_id = parent_ids_map[dataset.parent_id]
+        else:
+            parent_id = None
         dst_dataset = api.dataset.create(
             project_id=project_id,
             name=g.DATASET_NAME or dataset.name,
             description=dataset.description,
             change_name_if_conflict=True,
+            parent_id=parent_id,
         )
+        if dataset.id in parent_ids_map:
+            parent_ids_map[dataset.id] = dst_dataset.id
 
         images_infos = api.image.get_list(dataset_id=dataset.id)
         images_names = [image_info.name for image_info in images_infos]
