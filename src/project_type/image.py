@@ -41,9 +41,6 @@ def clone(api: sly.Api, project_id, datasets, project_meta: sly.ProjectMeta):
         images_names = [image_info.name for image_info in images_infos]
         images_ids = [image_info.id for image_info in images_infos]
 
-        ann_jsons = [
-            ann_info.annotation for ann_info in api.annotation.get_list(dataset_id=dataset.id)
-        ]
 
         progress_cb = progress.get_progress_cb(
             api,
@@ -65,13 +62,14 @@ def clone(api: sly.Api, project_id, datasets, project_meta: sly.ProjectMeta):
             api,
             task_id=g.TASK_ID,
             message="Uploading annotations",
-            total=len(ann_jsons),
+            total=len(new_images_ids),
             is_size=False,
         )
 
-        for batch_anns, batch_ids in zip(sly.batched(ann_jsons), sly.batched(new_images_ids)):
+        for batch_ids, batch_new_ids in zip(sly.batched(images_ids), sly.batched(new_images_ids)):
+            batch_ann_jsons = api.annotation.download_json_batch(dataset.id, batch_ids)
             checked_ann_jsons = []
-            for ann_json, img_id in zip(batch_anns, batch_ids):
+            for ann_json, img_id, new_img_id in zip(batch_ann_jsons, batch_ids, batch_new_ids):
                 # * do not remove: convert to sly and back to json to fix possible geometric errors
                 ann = sly.Annotation.from_json(ann_json, project_meta)
                 # * filter labels with Cuboid geometry
@@ -87,12 +85,12 @@ def clone(api: sly.Api, project_id, datasets, project_meta: sly.ProjectMeta):
                         if ann_has_any_shapes:
                             sly.logger.warn(
                                 f"Some labels on the image ID:{img_id} have unsupported geometry: "
-                                f"Cuboid. They will be removed."
+                                f"Cuboid. They will be removed (New image ID:{new_img_id})."
                             )
                             ann = ann.clone(labels=keep_labels)
                     else:
                         ann = ann.filter_labels_by_classes(keep_classes)
                 checked_ann_jsons.append(ann.to_json())
             api.annotation.upload_jsons(
-                img_ids=batch_ids, ann_jsons=checked_ann_jsons, progress_cb=progress_cb
+                img_ids=batch_new_ids, ann_jsons=checked_ann_jsons, progress_cb=progress_cb
             )
