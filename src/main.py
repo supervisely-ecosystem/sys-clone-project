@@ -12,7 +12,7 @@ import project_type.pointcloud_episodes as pointcloud_episodes
 @sly.timeit
 def clone_data(api: sly.Api, task_id, context, state, app_logger):
     project = api.project.get_info_by_id(g.PROJECT_ID)
-    project_meta_json = api.project.get_meta(project.id)
+    project_meta_json = api.project.get_meta(project.id, with_settings=True)
     project_meta = sly.ProjectMeta.from_json(data=project_meta_json)
     project_type = project_meta.project_type
 
