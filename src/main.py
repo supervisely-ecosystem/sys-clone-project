@@ -14,7 +14,7 @@ def clone_data(api: sly.Api, task_id, context, state, app_logger):
     project = api.project.get_info_by_id(g.PROJECT_ID)
 
     # -------------------------------------- Add Workflow Input -------------------------------------- #
-    g.my_app.add_input_project(project.id)
+    api.app.add_input_project(project.id)
     # ----------------------------------------------- - ---------------------------------------------- #
 
     project_meta_json = api.project.get_meta(project.id)
@@ -98,7 +98,7 @@ def clone_data(api: sly.Api, task_id, context, state, app_logger):
     )
 
     # -------------------------------------- Add Workflow Output ------------------------------------- #
-    g.my_app.add_output_project(dst_project.id)
+    api.app.add_output_project(dst_project.id)
     # ----------------------------------------------- - ---------------------------------------------- #
 
     g.my_app.stop()
