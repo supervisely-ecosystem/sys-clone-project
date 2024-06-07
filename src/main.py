@@ -12,6 +12,11 @@ import project_type.pointcloud_episodes as pointcloud_episodes
 @sly.timeit
 def clone_data(api: sly.Api, task_id, context, state, app_logger):
     project = api.project.get_info_by_id(g.PROJECT_ID)
+
+    # -------------------------------------- Add Workflow Input -------------------------------------- #
+    g.my_app.add_input_project(project.id)
+    # ----------------------------------------------- - ---------------------------------------------- #
+
     project_meta_json = api.project.get_meta(project.id)
     project_meta = sly.ProjectMeta.from_json(data=project_meta_json)
     project_type = project_meta.project_type
@@ -49,7 +54,7 @@ def clone_data(api: sly.Api, task_id, context, state, app_logger):
             change_name_if_conflict=True,
         )
         api.project.update_meta(id=dst_project.id, meta=project_meta)
-        
+
     if g.DATASET_ID:
         datasets = [api.dataset.get_info_by_id(g.DATASET_ID)]
     else:
@@ -91,6 +96,11 @@ def clone_data(api: sly.Api, task_id, context, state, app_logger):
     api.app.set_output_project(
         task_id=g.TASK_ID, project_id=dst_project.id, project_name=dst_project.name
     )
+
+    # -------------------------------------- Add Workflow Output ------------------------------------- #
+    g.my_app.add_output_project(dst_project.id)
+    # ----------------------------------------------- - ---------------------------------------------- #
+
     g.my_app.stop()
 
 
