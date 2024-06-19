@@ -4,3 +4,4 @@ venv
 debug
 __pycache__
 supervisely
+.DS_Store

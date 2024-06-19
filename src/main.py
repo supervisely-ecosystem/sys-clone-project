@@ -17,7 +17,7 @@ def clone_data(api: sly.Api, task_id, context, state, app_logger):
     api.app.add_input_project(project.id)
     # ----------------------------------------------- - ---------------------------------------------- #
 
-    project_meta_json = api.project.get_meta(project.id)
+    project_meta_json = api.project.get_meta(project.id, with_settings=True)
     project_meta = sly.ProjectMeta.from_json(data=project_meta_json)
     project_type = project_meta.project_type
 
@@ -57,11 +57,18 @@ def clone_data(api: sly.Api, task_id, context, state, app_logger):
 
     if g.DATASET_ID:
         datasets = [api.dataset.get_info_by_id(g.DATASET_ID)]
+    elif project_type == str(sly.ProjectType.IMAGES):
+        datasets = api.dataset.get_list(project.id, recursive=True)
     else:
         datasets = api.dataset.get_list(project.id)
 
     if project_type == str(sly.ProjectType.IMAGES):
-        image.clone(api=api, project_id=dst_project.id, datasets=datasets)
+        image.clone(
+            api=api,
+            project_id=dst_project.id,
+            datasets=datasets,
+            project_meta=project_meta,
+        )
     elif project_type == str(sly.ProjectType.VIDEOS):
         video.clone(
             api=api,
@@ -121,4 +128,4 @@ def main():
 
 
 if __name__ == "__main__":
-    sly.main_wrapper("main", main)
+    sly.main_wrapper("main", main, log_for_agent=False)
