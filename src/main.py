@@ -1,6 +1,7 @@
 import supervisely as sly
 
 import globals as g
+from workflow import Workflow
 import project_type.image as image
 import project_type.video as video
 import project_type.volume as volume
@@ -12,9 +13,9 @@ import project_type.pointcloud_episodes as pointcloud_episodes
 @sly.timeit
 def clone_data(api: sly.Api, task_id, context, state, app_logger):
     project = api.project.get_info_by_id(g.PROJECT_ID)
-
+    workflow = Workflow(api)
     # -------------------------------------- Add Workflow Input -------------------------------------- #
-    api.app.add_input_project(project.id)
+    workflow.add_input(project.id)
     # ----------------------------------------------- - ---------------------------------------------- #
 
     project_meta_json = api.project.get_meta(project.id, with_settings=True)
@@ -105,7 +106,7 @@ def clone_data(api: sly.Api, task_id, context, state, app_logger):
     )
 
     # -------------------------------------- Add Workflow Output ------------------------------------- #
-    api.app.add_output_project(dst_project.id)
+    workflow.add_output(dst_project.id)
     # ----------------------------------------------- - ---------------------------------------------- #
 
     g.my_app.stop()
