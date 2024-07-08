@@ -1,5 +1,4 @@
 import supervisely as sly
-import os
 
 
 def check_compatibility(func):
@@ -18,7 +17,7 @@ class Workflow:
         self.is_compatible = None
         self.api = api
         self._min_instance_version = (
-            "6.9.22" if min_instance_version is None else min_instance_version
+            "6.9.31" if min_instance_version is None else min_instance_version
         )
 
     def check_instance_ver_compatibility(self):
