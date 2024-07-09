@@ -106,7 +106,7 @@ def clone_data(api: sly.Api, task_id, context, state, app_logger):
     )
 
     # -------------------------------------- Add Workflow Output ------------------------------------- #
-    workflow.add_output(dst_project.id)
+    workflow.add_output(dst_project.id, g.DATASET_ID)
     # ----------------------------------------------- - ---------------------------------------------- #
 
     g.my_app.stop()
