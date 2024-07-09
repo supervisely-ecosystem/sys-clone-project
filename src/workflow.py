@@ -37,13 +37,13 @@ class Workflow:
         if dataset_id:
             node_meta = {
                 "customNodeSettings": {
-                    "title": "Clone Dataset",
+                    "title": "<h4>Clone Dataset</h4>",
                 }
             }
         else:
             node_meta = {
                 "customNodeSettings": {
-                    "title": "Clone Project",
+                    "title": "<h4>Clone Project</h4>",
                 }
             }
         self.api.app.workflow.add_output_project(project_id, meta=node_meta)
