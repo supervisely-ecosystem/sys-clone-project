@@ -33,5 +33,17 @@ class Workflow:
         self.api.app.workflow.add_input_project(project_id)
 
     @check_compatibility
-    def add_output(self, project_id: int):
-        self.api.app.workflow.add_output_project(project_id)
+    def add_output(self, project_id: int, dataset_id: int = None):
+        if dataset_id:
+            node_meta = {
+                "customNodeSettings": {
+                    "title": "Clone Dataset",
+                }
+            }
+        else:
+            node_meta = {
+                "customNodeSettings": {
+                    "title": "Clone Project",
+                }
+            }
+        self.api.app.workflow.add_output_project(project_id, meta=node_meta)
