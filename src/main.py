@@ -59,16 +59,9 @@ def clone_data(api: sly.Api, task_id, context, state, app_logger):
     if project_type == str(sly.ProjectType.IMAGES):
         if g.DATASET_ID:
             datasets = api.dataset.get_nested(g.PROJECT_ID, g.DATASET_ID)
-            sly.logger.info(
-                "The project is of type IMAGES and the dataset_id is specified."
-                f"Retrieved {len(datasets)} nested datasets.",
-            )
+            datasets.append(api.dataset.get_info_by_id(g.DATASET_ID))
         else:
             datasets = api.dataset.get_list(project.id, recursive=True)
-            sly.logger.info(
-                "The project is of type IMAGES and the dataset_id is not specified."
-                f"Retrieved {len(datasets)} datasets.",
-            )
     elif g.DATASET_ID:
         datasets = [api.dataset.get_info_by_id(g.DATASET_ID)]
     else:
