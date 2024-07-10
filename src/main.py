@@ -67,6 +67,10 @@ def clone_data(api: sly.Api, task_id, context, state, app_logger):
             )
         else:
             datasets = api.dataset.get_list(project.id, recursive=True)
+            sly.logger.info(
+                "The project is of type IMAGES and the dataset_id is not specified."
+                f"Retrieved {len(datasets)} datasets.",
+            )
     else:
         datasets = api.dataset.get_list(project.id)
 
