@@ -7,7 +7,11 @@ def check_compatibility(func):
             self.is_compatible = self.check_instance_ver_compatibility()
         if not self.is_compatible:
             return
-        return func(self, *args, **kwargs)
+        try:
+            return func(self, *args, **kwargs)
+        except Exception as e:
+            sly.logger.error(f"Workflow versioning action failed: {repr(e)}")
+            return
 
     return wrapper
 
