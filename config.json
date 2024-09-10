@@ -1,42 +1,42 @@
 {
-  "name": "Clone",
-  "type": "app",
-  "categories": [
-    "system",
-    "data operations",
-    "project management",
-    "images",
-    "videos",
-    "pointclouds",
-    "dicom"
-  ],
-  "description": "Clone project or dataset to selected workspace or project, works with all project types: images / videos / 3d / dicom",
-  "docker_image": "supervisely/system:6.73.138",
-  "instance_version": "6.9.22",
-  "main_script": "src/main.py",
-  "modal_template": "src/modal.html",
-  "modal_template_state": {
-    "projectName": "",
-    "datasetName": ""
-  },
-  "task_location": "workspace_tasks",
-  "isolate": true,
-  "headless": true,
-  "icon": "https://img.icons8.com/color/96/000000/copy--v1.png",
-  "icon_background": "#FFFFFF",
-  "context_menu": {
-    "target": [
-      "images_project",
-      "videos_project",
-      "point_cloud_project",
-      "volumes_project",
-      "point_cloud_episodes_project",
-      "images_dataset",
-      "videos_dataset",
-      "point_cloud_dataset",
-      "volumes_dataset",
-      "point_cloud_episodes_dataset"
-    ]
-  },
-  "poster": "https://user-images.githubusercontent.com/48913536/199025849-6e3fdfd5-3f45-463e-b7ea-71c22f42134d.png"
+	"name": "Clone",
+	"type": "app",
+	"categories": [
+		"system",
+		"data operations",
+		"project management",
+		"images",
+		"videos",
+		"pointclouds",
+		"dicom"
+	],
+	"description": "Clone project or dataset to selected workspace or project, works with all project types: images / videos / 3d / dicom",
+	"docker_image": "supervisely/system:6.73.182",
+	"instance_version": "6.11.10",
+	"main_script": "src/main.py",
+	"modal_template": "src/modal.html",
+	"modal_template_state": {
+		"projectName": "",
+		"datasetName": ""
+	},
+	"task_location": "workspace_tasks",
+	"isolate": true,
+	"headless": true,
+	"icon": "https://img.icons8.com/color/96/000000/copy--v1.png",
+	"icon_background": "#FFFFFF",
+	"context_menu": {
+		"target": [
+			"images_project",
+			"videos_project",
+			"point_cloud_project",
+			"volumes_project",
+			"point_cloud_episodes_project",
+			"images_dataset",
+			"videos_dataset",
+			"point_cloud_dataset",
+			"volumes_dataset",
+			"point_cloud_episodes_dataset"
+		]
+	},
+	"poster": "https://user-images.githubusercontent.com/48913536/199025849-6e3fdfd5-3f45-463e-b7ea-71c22f42134d.png"
 }
