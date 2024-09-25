@@ -12,7 +12,7 @@
 	],
 	"description": "Clone project or dataset to selected workspace or project, works with all project types: images / videos / 3d / dicom",
 	"docker_image": "supervisely/system:6.73.196",
-	"instance_version": "6.11.10",
+	"instance_version": "6.11.16",
 	"main_script": "src/main.py",
 	"modal_template": "src/modal.html",
 	"modal_template_state": {
