@@ -4,7 +4,7 @@ import progress
 import globals as g
 
 
-def clone(api: sly.Api, project_id, datasets, project_meta: sly.ProjectMeta):
+def clone(api: sly.Api, project_id, datasets, project_meta: sly.ProjectMeta, similar_graphs):
     keep_classes = []
     remove_classes = []
     meta_has_any_shapes = False
@@ -41,7 +41,6 @@ def clone(api: sly.Api, project_id, datasets, project_meta: sly.ProjectMeta):
         images_names = [image_info.name for image_info in images_infos]
         images_ids = [image_info.id for image_info in images_infos]
 
-
         progress_cb = progress.get_progress_cb(
             api,
             task_id=g.TASK_ID,
@@ -65,6 +64,16 @@ def clone(api: sly.Api, project_id, datasets, project_meta: sly.ProjectMeta):
             total=len(new_images_ids),
             is_size=False,
         )
+
+        have_similar_graphs = False
+        if len(similar_graphs) > 0:
+            have_similar_graphs = True
+            dst_project_meta_json = api.project.get_meta(g.DEST_PROJECT_ID)
+            dst_project_meta = sly.ProjectMeta.from_json(dst_project_meta_json)
+            for obj_class in project_meta.obj_classes:
+                if not dst_project_meta.get_obj_class(obj_class.name):
+                    dst_project_meta = dst_project_meta.add_obj_class(obj_class)
+                    api.project.update_meta(id=g.DEST_PROJECT_ID, meta=dst_project_meta)
 
         for batch_ids, batch_new_ids in zip(sly.batched(images_ids), sly.batched(new_images_ids)):
             batch_ann_jsons = api.annotation.download_json_batch(dataset.id, batch_ids)
@@ -90,6 +99,38 @@ def clone(api: sly.Api, project_id, datasets, project_meta: sly.ProjectMeta):
                             ann = ann.clone(labels=keep_labels)
                     else:
                         ann = ann.filter_labels_by_classes(keep_classes)
+                # check if annotation contains similar graphs
+                if have_similar_graphs:
+                    new_labels = []
+                    for label in ann.labels:
+                        if label.obj_class.name in similar_graphs:
+                            # get source and destination geometry config
+                            src_obj_class = label.obj_class
+                            dst_obj_class = dst_project_meta.get_obj_class(label.obj_class.name)
+                            src_geometry_config = src_obj_class.geometry_config
+                            dst_geometry_config = dst_obj_class.geometry_config
+                            # create dictionary to match original labels by node ids
+                            src_node_id2label = {}
+                            for node_id, node in src_geometry_config["nodes"].items():
+                                src_node_id2label[node_id] = node["label"]
+                            # create dictionary to get destination node_ids by labels
+                            dst_label2_node_id = {}
+                            for node_id, node in dst_geometry_config["nodes"].items():
+                                dst_label2_node_id[node["label"]] = node_id
+                            # create new nodes dictioanry with destination node ids and original nodes
+                            src_geometry = label.geometry
+                            src_nodes = src_geometry.nodes
+                            new_nodes = {}
+                            for node_id, node in src_nodes.items():
+                                src_node_label = src_node_id2label[node_id]
+                                dst_node_id = dst_label2_node_id[src_node_label]
+                                new_nodes[dst_node_id] = node
+                            new_geometry = sly.GraphNodes(new_nodes)
+                            new_label = sly.Label(new_geometry, dst_obj_class)
+                            new_labels.append(new_label)
+                        else:
+                            new_labels.append(label)
+                    ann = ann.clone(labels=new_labels)
                 checked_ann_jsons.append(ann.to_json())
             api.annotation.upload_jsons(
                 img_ids=batch_new_ids, ann_jsons=checked_ann_jsons, progress_cb=progress_cb

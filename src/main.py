@@ -23,6 +23,7 @@ def clone_data(api: sly.Api, task_id, context, state, app_logger):
     project_type = project_meta.project_type
 
     dst_project = None
+    similar_graphs = []
     if g.DEST_PROJECT_ID:
         dst_project = api.project.get_info_by_id(g.DEST_PROJECT_ID)
         if dst_project is None:
@@ -37,14 +38,57 @@ def clone_data(api: sly.Api, task_id, context, state, app_logger):
             )
             dst_project = None
         else:
-            try:
-                api.project.merge_metas(project.id, dst_project.id)
-            except Exception as e:
-                sly.logger.warn(
-                    f"Can not merge meta of source project and destination project: {str(e)}. "
-                    f"New destination project will be created."
-                )
-                dst_project = None
+            if project.type == "images" and dst_project:
+                # get destination project meta
+                dst_project_meta_json = api.project.get_meta(dst_project.id)
+                dst_project_meta = sly.ProjectMeta.from_json(dst_project_meta_json)
+                # chech if there are any graph objects in source and destination project metas
+                src_obj_classes = project_meta.obj_classes
+                dst_obj_classes = dst_project_meta.obj_classes
+                src_graph_names = [
+                    obj_class.name
+                    for obj_class in src_obj_classes
+                    if obj_class.geometry_type == sly.GraphNodes
+                ]
+                dst_graph_names = [
+                    obj_class.name
+                    for obj_class in dst_obj_classes
+                    if obj_class.geometry_type == sly.GraphNodes
+                ]
+                if len(src_graph_names) > 0 and len(dst_graph_names) > 0:
+                    # check if there are graph objects with the same name
+                    if len(set(src_graph_names).intersection(set(dst_graph_names))) > 0:
+                        # check if they have same number of nodes and same node labels
+                        for src_name in src_graph_names:
+                            if src_name in dst_graph_names:
+                                src_obj_class = project_meta.get_obj_class(src_name)
+                                dst_obj_class = dst_project_meta.get_obj_class(src_name)
+                                src_geometry_config = src_obj_class.geometry_config
+                                dst_geometry_config = dst_obj_class.geometry_config
+                                # check if graphs have the same number of nodes
+                                if len(dst_geometry_config["nodes"]) == len(
+                                    src_geometry_config["nodes"]
+                                ):
+                                    # check if graphs have the same node labels
+                                    dst_node_labels = [
+                                        value["label"]
+                                        for value in dst_geometry_config["nodes"].values()
+                                    ]
+                                    src_node_labels = [
+                                        value["label"]
+                                        for value in src_geometry_config["nodes"].values()
+                                    ]
+                                    if set(dst_node_labels) == set(src_node_labels):
+                                        similar_graphs.append(src_name)
+            if len(similar_graphs) == 0:
+                try:
+                    api.project.merge_metas(project.id, dst_project.id)
+                except Exception as e:
+                    sly.logger.warn(
+                        f"Can not merge meta of source project and destination project: {str(e)}. "
+                        f"New destination project will be created."
+                    )
+                    dst_project = None
 
     if dst_project is None:
         dst_project = api.project.create(
@@ -73,6 +117,7 @@ def clone_data(api: sly.Api, task_id, context, state, app_logger):
             project_id=dst_project.id,
             datasets=datasets,
             project_meta=project_meta,
+            similar_graphs=similar_graphs,
         )
     elif project_type == str(sly.ProjectType.VIDEOS):
         video.clone(
