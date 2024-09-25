@@ -12,7 +12,7 @@ sly.logger.info(f'PYTHONPATH={os.environ.get("PYTHONPATH", "")}')
 
 if sly.is_development():
     load_dotenv("local.env")
-    load_dotenv(os.path.expanduser("~/supervisely.env"))
+    load_dotenv("supervisely.env")
 
 api: sly.Api = sly.Api.from_env()
 my_app: AppService = AppService(ignore_task_id=True)
