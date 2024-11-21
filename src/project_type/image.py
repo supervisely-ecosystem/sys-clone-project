@@ -40,6 +40,7 @@ def clone(api: sly.Api, project_id, datasets, project_meta: sly.ProjectMeta, sim
         images_infos = api.image.get_list(dataset_id=dataset.id)
         images_names = [image_info.name for image_info in images_infos]
         images_ids = [image_info.id for image_info in images_infos]
+        images_metas = [image_info.meta for image_info in images_infos]
 
         progress_cb = progress.get_progress_cb(
             api,
@@ -54,6 +55,7 @@ def clone(api: sly.Api, project_id, datasets, project_meta: sly.ProjectMeta, sim
             names=images_names,
             ids=images_ids,
             progress_cb=progress_cb,
+            metas=images_metas,
         )
         new_images_ids = [image_info.id for image_info in new_images_infos]
 
