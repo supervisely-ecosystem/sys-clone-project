@@ -1,5 +1,4 @@
 def get_datasets_tree_msg(datasets_tree):
-    msg = "Datasets tree:\n"
 
     def _collect_ds_tree_names(ds_tree, level=0):
         msg = ""
@@ -8,4 +7,4 @@ def get_datasets_tree_msg(datasets_tree):
             msg += _collect_ds_tree_names(nested_ds_tree, level + 1)
         return msg
 
-    msg += _collect_ds_tree_names(datasets_tree)
+    return _collect_ds_tree_names(datasets_tree)
