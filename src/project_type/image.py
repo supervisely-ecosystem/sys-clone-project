@@ -17,7 +17,7 @@ def clone(
             meta_has_any_shapes = True
         if obj_cls.geometry_type == sly.Cuboid:
             remove_classes.append(obj_cls.name)
-            sly.logger.warn(
+            sly.logger.warning(
                 f"Class {obj_cls.name} has unsupported geometry type for images: Cuboid. It will be removed."
             )
         else:
@@ -94,7 +94,7 @@ def clone(
                                 continue
                             keep_labels.append(label)
                         if ann_has_any_shapes:
-                            sly.logger.warn(
+                            sly.logger.warning(
                                 f"Some labels on the image ID:{img_id} have unsupported geometry: "
                                 f"Cuboid. They will be removed (New image ID:{new_img_id})."
                             )
@@ -147,7 +147,7 @@ def clone(
             _process_datasets_tree(nested_src_ds_tree)
 
     # create hierarchy of datasets
-    _create_datasets_tree(src_ds_tree, first_ds=g.DATASET_NAME is not None)
+    _create_datasets_tree(src_ds_tree, first_ds=g.DATASET_NAME not in ["", None])
 
     # process datasets tree
     _process_datasets_tree(src_ds_tree)

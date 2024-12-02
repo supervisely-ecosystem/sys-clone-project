@@ -1,6 +1,7 @@
 import supervisely as sly
 
 import globals as g
+import functions as f
 from workflow import Workflow
 import project_type.image as image
 import project_type.video as video
@@ -27,12 +28,12 @@ def clone_data(api: sly.Api, task_id, context, state, app_logger):
     if g.DEST_PROJECT_ID:
         dst_project = api.project.get_info_by_id(g.DEST_PROJECT_ID)
         if dst_project is None:
-            sly.logger.warn(
+            sly.logger.warning(
                 f"Destination project with id={g.DEST_PROJECT_ID} not found. "
                 f"New destination project will be created.",
             )
         elif dst_project.type != project.type:
-            sly.logger.warn(
+            sly.logger.warning(
                 f"Destination project type ({dst_project.type}) != source project type ({project.type}). "
                 f"New destination project will be created.",
             )
@@ -113,6 +114,7 @@ def clone_data(api: sly.Api, task_id, context, state, app_logger):
                 return
             
             datasets_tree = _find_datasets_tree_by_id(datasets_tree, g.DATASET_ID)
+        sly.logger.info("Datasets tree for cloning", extra={"datasets_tree": datasets_tree})
     elif g.DATASET_ID:
         datasets = [api.dataset.get_info_by_id(g.DATASET_ID)]
     else:
