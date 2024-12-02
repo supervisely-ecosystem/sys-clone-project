@@ -117,7 +117,7 @@ def clone_data(api: sly.Api, task_id, context, state, app_logger):
 
 
         log_msg = f.get_datasets_tree_msg(datasets_tree)
-        sly.logger.info("Datasets tree for cloning", extra={"datasets_tree": log_msg})
+        sly.logger.info("Datasets to clone:", extra={"datasets_tree": log_msg})
     elif g.DATASET_ID:
         datasets = [api.dataset.get_info_by_id(g.DATASET_ID)]
     else:
