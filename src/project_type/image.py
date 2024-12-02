@@ -4,40 +4,40 @@ import progress
 import globals as g
 
 
-def clone(api: sly.Api, project_id, datasets, project_meta: sly.ProjectMeta, similar_graphs):
+def clone(
+    api: sly.Api, project_id, src_ds_tree, project_meta: sly.ProjectMeta, similar_graphs
+):
     keep_classes = []
     remove_classes = []
     meta_has_any_shapes = False
-    parent_ids_map = {}
-    for ds in datasets:
-        if ds.parent_id and ds.parent_id not in parent_ids_map:
-            parent_ids_map[ds.parent_id] = None
+    src_dst_ds_id_map = {}
+
     for obj_cls in project_meta.obj_classes:
         if obj_cls.geometry_type == sly.AnyGeometry:
             meta_has_any_shapes = True
         if obj_cls.geometry_type == sly.Cuboid:
             remove_classes.append(obj_cls.name)
-            sly.logger.warn(
+            sly.logger.warning(
                 f"Class {obj_cls.name} has unsupported geometry type for images: Cuboid. It will be removed."
             )
         else:
             keep_classes.append(obj_cls.name)
-    for dataset in datasets:
-        if dataset.parent_id in parent_ids_map:
-            parent_id = parent_ids_map[dataset.parent_id]
-        else:
-            parent_id = None
-        dst_dataset = api.dataset.create(
-            project_id=project_id,
-            name=g.DATASET_NAME or dataset.name,
-            description=dataset.description,
-            change_name_if_conflict=True,
-            parent_id=parent_id,
-        )
-        if dataset.id in parent_ids_map:
-            parent_ids_map[dataset.id] = dst_dataset.id
 
-        images_infos = api.image.get_list(dataset_id=dataset.id)
+    def _create_datasets_tree(src_ds_tree, parent_id=None, first_ds=False):
+        for src_ds, nested_src_ds_tree in src_ds_tree.items():
+            dst_ds = api.dataset.create(
+                project_id=project_id,
+                name=g.DATASET_NAME if first_ds else src_ds.name,
+                description=src_ds.description,
+                change_name_if_conflict=True,
+                parent_id=parent_id,
+            )
+            first_ds = False
+            src_dst_ds_id_map[src_ds.id] = dst_ds.id
+            _create_datasets_tree(nested_src_ds_tree, parent_id=dst_ds.id)
+
+    def _copy_dataset_items(src_ds_id, dst_ds_id):
+        images_infos = api.image.get_list(dataset_id=src_ds_id)
         images_names = [image_info.name for image_info in images_infos]
         images_ids = [image_info.id for image_info in images_infos]
         images_metas = [image_info.meta for image_info in images_infos]
@@ -51,7 +51,7 @@ def clone(api: sly.Api, project_id, datasets, project_meta: sly.ProjectMeta, sim
         )
 
         new_images_infos = api.image.upload_ids(
-            dataset_id=dst_dataset.id,
+            dataset_id=dst_ds_id,
             names=images_names,
             ids=images_ids,
             progress_cb=progress_cb,
@@ -78,7 +78,7 @@ def clone(api: sly.Api, project_id, datasets, project_meta: sly.ProjectMeta, sim
                     api.project.update_meta(id=g.DEST_PROJECT_ID, meta=dst_project_meta)
 
         for batch_ids, batch_new_ids in zip(sly.batched(images_ids), sly.batched(new_images_ids)):
-            batch_ann_jsons = api.annotation.download_json_batch(dataset.id, batch_ids)
+            batch_ann_jsons = api.annotation.download_json_batch(src_ds_id, batch_ids)
             checked_ann_jsons = []
             for ann_json, img_id, new_img_id in zip(batch_ann_jsons, batch_ids, batch_new_ids):
                 # * do not remove: convert to sly and back to json to fix possible geometric errors
@@ -94,7 +94,7 @@ def clone(api: sly.Api, project_id, datasets, project_meta: sly.ProjectMeta, sim
                                 continue
                             keep_labels.append(label)
                         if ann_has_any_shapes:
-                            sly.logger.warn(
+                            sly.logger.warning(
                                 f"Some labels on the image ID:{img_id} have unsupported geometry: "
                                 f"Cuboid. They will be removed (New image ID:{new_img_id})."
                             )
@@ -137,3 +137,17 @@ def clone(api: sly.Api, project_id, datasets, project_meta: sly.ProjectMeta, sim
             api.annotation.upload_jsons(
                 img_ids=batch_new_ids, ann_jsons=checked_ann_jsons, progress_cb=progress_cb
             )
+
+    def _process_datasets_tree(src_ds_tree):
+        for src_ds, nested_src_ds_tree in src_ds_tree.items():
+            # copy images and annotations from src_ds to dst_ds
+            _copy_dataset_items(src_ds.id, src_dst_ds_id_map[src_ds.id])
+
+            # process nested datasets
+            _process_datasets_tree(nested_src_ds_tree)
+
+    # create hierarchy of datasets
+    _create_datasets_tree(src_ds_tree, first_ds=g.DATASET_NAME not in ["", None])
+
+    # process datasets tree
+    _process_datasets_tree(src_ds_tree)

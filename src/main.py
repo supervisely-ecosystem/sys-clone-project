@@ -1,6 +1,7 @@
 import supervisely as sly
 
 import globals as g
+import functions as f
 from workflow import Workflow
 import project_type.image as image
 import project_type.video as video
@@ -27,12 +28,12 @@ def clone_data(api: sly.Api, task_id, context, state, app_logger):
     if g.DEST_PROJECT_ID:
         dst_project = api.project.get_info_by_id(g.DEST_PROJECT_ID)
         if dst_project is None:
-            sly.logger.warn(
+            sly.logger.warning(
                 f"Destination project with id={g.DEST_PROJECT_ID} not found. "
                 f"New destination project will be created.",
             )
         elif dst_project.type != project.type:
-            sly.logger.warn(
+            sly.logger.warning(
                 f"Destination project type ({dst_project.type}) != source project type ({project.type}). "
                 f"New destination project will be created.",
             )
@@ -101,11 +102,22 @@ def clone_data(api: sly.Api, task_id, context, state, app_logger):
         api.project.update_meta(id=dst_project.id, meta=project_meta)
 
     if project_type == str(sly.ProjectType.IMAGES):
+        datasets_tree = api.dataset.get_tree(project.id)  # Dict[DatasetInfo, Dict[DatasetInfo, Dict[...]]] (recursively)
         if g.DATASET_ID:
-            datasets = [api.dataset.get_info_by_id(g.DATASET_ID)]
-            datasets.extend(api.dataset.get_nested(g.PROJECT_ID, g.DATASET_ID))
-        else:
-            datasets = api.dataset.get_list(project.id, recursive=True)
+            def _find_datasets_tree_by_id(datasets_tree, dataset_id):
+                for dataset, nested_datasets_tree in datasets_tree.items():
+                    if dataset.id == dataset_id:
+                        return {dataset: nested_datasets_tree}
+                    nested_result = _find_datasets_tree_by_id(nested_datasets_tree, dataset_id)
+                    if nested_result is not None:
+                        return nested_result
+                return
+            
+            datasets_tree = _find_datasets_tree_by_id(datasets_tree, g.DATASET_ID)
+
+
+        log_msg = f.get_datasets_tree_msg(datasets_tree)
+        sly.logger.info("Datasets to clone:", extra={"datasets_tree": log_msg})
     elif g.DATASET_ID:
         datasets = [api.dataset.get_info_by_id(g.DATASET_ID)]
     else:
@@ -115,7 +127,7 @@ def clone_data(api: sly.Api, task_id, context, state, app_logger):
         image.clone(
             api=api,
             project_id=dst_project.id,
-            datasets=datasets,
+            src_ds_tree=datasets_tree,
             project_meta=project_meta,
             similar_graphs=similar_graphs,
         )
