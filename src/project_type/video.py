@@ -19,10 +19,11 @@ def clone(api: sly.Api, project_id, datasets, project_meta):
         )
         for video_info in videos_infos:
             if video_info.link:
-                new_video_info = api.video.upload_link(
+                new_video_info = api.video.upload_id(
                     dataset_id=dst_dataset.id,
                     name=video_info.name,
-                    link=video_info.link,
+                    id=video_info.id,
+                    meta=video_info.meta,
                 )
             elif video_info.hash:
                 new_video_info = api.video.upload_hash(
