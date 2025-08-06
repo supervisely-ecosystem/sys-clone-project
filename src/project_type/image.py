@@ -33,7 +33,8 @@ def clone(api: sly.Api, project_id, src_ds_tree, project_meta: sly.ProjectMeta, 
             first_ds = False
             src_dst_ds_id_map[src_ds.id] = dst_ds.id
 
-            api.dataset.update_custom_data(dst_ds.id, src_ds.custom_data)
+            if src_ds.custom_data is not None:
+                api.dataset.update_custom_data(dst_ds.id, src_ds.custom_data)
 
             _create_datasets_tree(nested_src_ds_tree, parent_id=dst_ds.id)
 
