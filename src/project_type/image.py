@@ -34,7 +34,6 @@ def clone(api: sly.Api, project_id, src_ds_tree, project_meta: sly.ProjectMeta, 
             src_dst_ds_id_map[src_ds.id] = dst_ds.id
 
             info_ds = api.dataset.get_info_by_id(src_ds.id)
-
             if info_ds.custom_data:
                 api.dataset.update_custom_data(dst_ds.id, info_ds.custom_data)
 
@@ -63,10 +62,6 @@ def clone(api: sly.Api, project_id, src_ds_tree, project_meta: sly.ProjectMeta, 
         )
         new_images_ids = [image_info.id for image_info in new_images_infos]
 
-        # api.image.update_custom_data(
-        #    new_images_ids,
-        #    custom_data=[image_info.custom_data for image_info in images_infos],
-        # )
         progress_cb = progress.get_progress_cb(
             api,
             task_id=g.TASK_ID,
