@@ -37,13 +37,13 @@ def clone(api: sly.Api, project_id, src_ds_tree, project_meta: sly.ProjectMeta, 
                 f"Created dataset {dst_ds.name} with ID {dst_ds.id} "
                 f"from source dataset {src_ds.name} with ID {src_ds.id}."
             )
-
-            if src_ds.custom_data:
+            info_ds = api.dataset.get_info_by_id(src_ds.id)
+            if src_ds.custom_data and info_ds.custom_data:
                 sly.logger.info(
                     f"Cloning custom data from dataset {src_ds.id} to dataset {dst_ds.id}."
                     f"Source custom data: {src_ds.custom_data}"
                 )
-                api.dataset.update_custom_data(dst_ds.id, src_ds.custom_data)
+                api.dataset.update_custom_data(dst_ds.id, info_ds.custom_data)
             else:
                 sly.logger.debug(
                     f"No custom data found for dataset {src_ds.id}. Custom data: {src_ds.custom_data}"
