@@ -4,9 +4,7 @@ import progress
 import globals as g
 
 
-def clone(
-    api: sly.Api, project_id, src_ds_tree, project_meta: sly.ProjectMeta, similar_graphs
-):
+def clone(api: sly.Api, project_id, src_ds_tree, project_meta: sly.ProjectMeta, similar_graphs):
     keep_classes = []
     remove_classes = []
     meta_has_any_shapes = False
@@ -34,6 +32,11 @@ def clone(
             )
             first_ds = False
             src_dst_ds_id_map[src_ds.id] = dst_ds.id
+
+            info_ds = api.dataset.get_info_by_id(src_ds.id)
+            if info_ds.custom_data:
+                api.dataset.update_custom_data(dst_ds.id, info_ds.custom_data)
+
             _create_datasets_tree(nested_src_ds_tree, parent_id=dst_ds.id)
 
     def _copy_dataset_items(src_ds_id, dst_ds_id):
