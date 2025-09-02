@@ -101,10 +101,11 @@ def clone_data(api: sly.Api, task_id, context, state, app_logger):
         )
         api.project.update_meta(id=dst_project.id, meta=project_meta)
 
-    if project_type == str(sly.ProjectType.IMAGES):
+    if project_type in [str(sly.ProjectType.IMAGES), str(sly.ProjectType.POINT_CLOUD_EPISODES)]:
         datasets_tree = api.dataset.get_tree(
             project.id
         )  # Dict[DatasetInfo, Dict[DatasetInfo, Dict[...]]] (recursively)
+        sly.logger.info(f"Datasets tree (source project): {f.get_datasets_tree_msg(datasets_tree)}")    
         if g.DATASET_ID:
 
             def _find_datasets_tree_by_id(datasets_tree, dataset_id):
@@ -124,6 +125,9 @@ def clone_data(api: sly.Api, task_id, context, state, app_logger):
         datasets = [api.dataset.get_info_by_id(g.DATASET_ID)]
     else:
         datasets = api.dataset.get_list(project.id, recursive=True)
+
+        log_msg = f.get_datasets_tree_msg(datasets)
+        sly.logger.info("Datasets to clone:", extra={"datasets_tree": log_msg}) 
 
     if project_type == str(sly.ProjectType.IMAGES):
         image.clone(
@@ -158,7 +162,7 @@ def clone_data(api: sly.Api, task_id, context, state, app_logger):
         pointcloud_episodes.clone(
             api=api,
             project_id=dst_project.id,
-            datasets=datasets,
+            src_ds_tree=datasets_tree,
             project_meta=project_meta,
         )
     else:

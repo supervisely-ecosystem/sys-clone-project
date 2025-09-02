@@ -8,23 +8,43 @@ from uuid import UUID
 import globals as g
 
 
-def clone(api: sly.Api, project_id, datasets, project_meta):
+def clone(api: sly.Api, project_id, src_ds_tree, project_meta):
     key_id_map_initial = KeyIdMap()
     key_id_map_new = KeyIdMap()
+    src_dst_ds_id_map = {}
+    sly.logger.info(f"Source to Destination Dataset ID Map: {src_dst_ds_id_map}")
     # Mapping from pointcloud ID -> {image_hash: image_id}
     pcl_to_hash_to_id = {}
     # Mapping from pointcloud ID -> {image_hash: [figures_json]}
     pcl_to_rimg_figures = {}
-    for dataset in datasets:
-        dst_dataset = api.dataset.create(
-            project_id=project_id,
-            name=g.DATASET_NAME or dataset.name,
-            description=dataset.description,
-            change_name_if_conflict=True,
-        )
 
-        pcd_episodes_infos = api.pointcloud_episode.get_list(dataset_id=dataset.id)
-        ann_json = api.pointcloud_episode.annotation.download(dataset_id=dataset.id)
+    def _create_datasets_tree(src_ds_tree, parent_id=None, first_ds=False):
+        for src_ds, nested_src_ds_tree in src_ds_tree.items():
+            sly.logger.info(f"Cloning dataset: {src_ds.name} (ID: {src_ds.id})")    
+            dst_ds = api.dataset.create(
+                project_id=project_id,
+                name=g.DATASET_NAME if first_ds else src_ds.name,
+                description=src_ds.description,
+                change_name_if_conflict=True,
+                parent_id=parent_id,
+            )
+            sly.logger.info(f"Created dataset: {dst_ds.name} (ID: {dst_ds.id})")    
+            first_ds = False
+            src_dst_ds_id_map[src_ds.id] = dst_ds.id
+
+            info_ds = api.dataset.get_info_by_id(src_ds.id)
+            if info_ds.custom_data:
+                api.dataset.update_custom_data(dst_ds.id, info_ds.custom_data)
+
+            _create_datasets_tree(nested_src_ds_tree, parent_id=dst_ds.id)
+
+            sly.logger.info(f"Cloned dataset: {src_ds.name} (ID: {src_ds.id}) to {dst_ds.name} (ID: {dst_ds.id})")  
+
+    def _copy_dataset_items(src_ds_id, dst_ds_id):
+        dataset = api.dataset.get_info_by_id(src_ds_id)
+        
+        pcd_episodes_infos = api.pointcloud_episode.get_list(dataset_id=src_ds_id)
+        ann_json = api.pointcloud_episode.annotation.download(dataset_id=src_ds_id)
         ann = sly.PointcloudEpisodeAnnotation.from_json(
             data=ann_json, project_meta=project_meta, key_id_map=key_id_map_initial
         )
@@ -38,7 +58,7 @@ def clone(api: sly.Api, project_id, datasets, project_meta):
         for pcd_episode_info in pcd_episodes_infos:
             if pcd_episode_info.hash:
                 new_pcd_episode_info = api.pointcloud_episode.upload_hash(
-                    dataset_id=dst_dataset.id,
+                    dataset_id=dst_ds_id,
                     name=pcd_episode_info.name,
                     hash=pcd_episode_info.hash,
                     meta=pcd_episode_info.meta,
@@ -56,7 +76,7 @@ def clone(api: sly.Api, project_id, datasets, project_meta):
 
                     # Download figures for related images in batch
                     batch_rimg_figures = api.image.figure.download(
-                        dataset_id=dataset.id, image_ids=rimg_ids
+                        dataset_id=src_ds_id, image_ids=rimg_ids
                     )
 
                     for rel_img in rel_images:
@@ -110,7 +130,7 @@ def clone(api: sly.Api, project_id, datasets, project_meta):
 
         # Append annotation once for the whole dataset (object IDs will be generated here)
         api.pointcloud_episode.annotation.append(
-            dataset_id=dst_dataset.id,
+            dataset_id=dst_ds_id,
             ann=ann,
             frame_to_pointcloud_ids=frame_to_pointcloud_ids,
             key_id_map=key_id_map_new,
@@ -128,7 +148,7 @@ def clone(api: sly.Api, project_id, datasets, project_meta):
                 for fig in figs_json:
                     try:
                         fig[ApiField.ENTITY_ID] = img_id
-                        fig[ApiField.DATASET_ID] = dst_dataset.id
+                        fig[ApiField.DATASET_ID] = dst_ds_id
                         fig[ApiField.PROJECT_ID] = project_id
                         fig[ApiField.OBJECT_ID] = key_id_map_new.get_object_id(
                             UUID(fig[OBJECT_KEY])
@@ -138,4 +158,20 @@ def clone(api: sly.Api, project_id, datasets, project_meta):
                 figures_payload.extend(figs_json)
 
         if len(figures_payload) > 0:
-            api.image.figure.create_bulk(figures_json=figures_payload, dataset_id=dst_dataset.id)
+            api.image.figure.create_bulk(figures_json=figures_payload, dataset_id=dst_ds_id)
+
+            sly.logger.info(f"Uploaded figures for dataset: {dst_ds_id}")   
+
+    def _process_datasets_tree(src_ds_tree):
+        for src_ds, nested_src_ds_tree in src_ds_tree.items():
+            # copy pointcloud episodes and annotations from src_ds to dst_ds
+            _copy_dataset_items(src_ds.id, src_dst_ds_id_map[src_ds.id])
+
+            # process nested datasets
+            _process_datasets_tree(nested_src_ds_tree)
+
+    # create hierarchy of datasets
+    _create_datasets_tree(src_ds_tree, first_ds=g.DATASET_NAME not in ["", None])
+
+    # process datasets tree
+    _process_datasets_tree(src_ds_tree)
