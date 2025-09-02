@@ -8,23 +8,17 @@ from uuid import UUID
 import globals as g
 
 
-def clone(api: sly.Api, project_id, datasets, project_meta):
+def clone(api: sly.Api, project_id, src_project_id, project_meta, dataset_id=None):
     key_id_map_initial = KeyIdMap()
     key_id_map_new = KeyIdMap()
     # Mapping from pointcloud ID -> {image_hash: image_id}
     pcl_to_hash_to_id = {}
     # Mapping from pointcloud ID -> {image_hash: [figures_json]}
     pcl_to_rimg_figures = {}
-    for dataset in datasets:
-        dst_dataset = api.dataset.create(
-            project_id=project_id,
-            name=g.DATASET_NAME or dataset.name,
-            description=dataset.description,
-            change_name_if_conflict=True,
-        )
 
-        pcd_episodes_infos = api.pointcloud_episode.get_list(dataset_id=dataset.id)
-        ann_json = api.pointcloud_episode.annotation.download(dataset_id=dataset.id)
+    def _process_dataset(src_dataset, dst_dataset):
+        pcd_episodes_infos = api.pointcloud_episode.get_list(dataset_id=src_dataset.id)
+        ann_json = api.pointcloud_episode.annotation.download(dataset_id=src_dataset.id)
         ann = sly.PointcloudEpisodeAnnotation.from_json(
             data=ann_json, project_meta=project_meta, key_id_map=key_id_map_initial
         )
@@ -32,7 +26,7 @@ def clone(api: sly.Api, project_id, datasets, project_meta):
         frame_to_pointcloud_ids = {}
 
         progress = sly.Progress(
-            message=f"Cloning pointcloud episodes from dataset: {dataset.name}",
+            message=f"Cloning pointcloud episodes from dataset: {src_dataset.name}",
             total_cnt=len(pcd_episodes_infos),
         )
         for pcd_episode_info in pcd_episodes_infos:
@@ -56,7 +50,7 @@ def clone(api: sly.Api, project_id, datasets, project_meta):
 
                     # Download figures for related images in batch
                     batch_rimg_figures = api.image.figure.download(
-                        dataset_id=dataset.id, image_ids=rimg_ids
+                        dataset_id=src_dataset.id, image_ids=rimg_ids
                     )
 
                     for rel_img in rel_images:
@@ -139,3 +133,23 @@ def clone(api: sly.Api, project_id, datasets, project_meta):
 
         if len(figures_payload) > 0:
             api.image.figure.create_bulk(figures_json=figures_payload, dataset_id=dst_dataset.id)
+
+    # Handle case when specific dataset is requested
+    if dataset_id:
+        src_dataset = api.dataset.get_info_by_id(dataset_id)
+        dst_dataset = api.dataset.create(
+            project_id=project_id,
+            name=g.DATASET_NAME or src_dataset.name,
+            description=src_dataset.description,
+            change_name_if_conflict=True,
+        )
+        _process_dataset(src_dataset, dst_dataset)
+    else:
+        # Use the recreate method to create hierarchical structure and process each dataset
+        for src_dataset, dst_dataset in api.project.recreate(src_project_id, project_id):
+            # Apply custom naming for the first dataset if specified
+            if g.DATASET_NAME and src_dataset.name == api.dataset.get_list(src_project_id)[0].name:
+                api.dataset.update(dst_dataset.id, name=g.DATASET_NAME)
+                dst_dataset = api.dataset.get_info_by_id(dst_dataset.id)  # refresh info
+            
+            _process_dataset(src_dataset, dst_dataset)

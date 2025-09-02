@@ -158,8 +158,9 @@ def clone_data(api: sly.Api, task_id, context, state, app_logger):
         pointcloud_episodes.clone(
             api=api,
             project_id=dst_project.id,
-            datasets=datasets,
+            src_project_id=project.id,
             project_meta=project_meta,
+            dataset_id=g.DATASET_ID,
         )
     else:
         raise NotImplementedError(f"Unknown project type: {project_type}")
