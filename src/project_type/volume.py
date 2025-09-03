@@ -1,21 +1,22 @@
 import os
 import supervisely as sly
 from supervisely.video_annotation.key_id_map import KeyIdMap
+from typing import List, Tuple
+from supervisely import DatasetInfo
 
 import globals as g
 
 
-def clone(api: sly.Api, project_id, datasets, project_meta):
+def clone(
+    api: sly.Api,
+    recreated_datasets: List[Tuple[DatasetInfo, DatasetInfo]],
+    project_meta,
+):
     key_id_map = KeyIdMap()
-    for dataset in datasets:
+    for dataset_pair in recreated_datasets:
+        dataset, dst_dataset = dataset_pair
         geometries_dir = f"geometries_{dataset.id}"
         sly.fs.mkdir(geometries_dir)
-        dst_dataset = api.dataset.create(
-            project_id=project_id,
-            name=g.DATASET_NAME or dataset.name,
-            description=dataset.description,
-            change_name_if_conflict=True,
-        )
         volumes_infos = api.volume.get_list(dataset_id=dataset.id)
         progress = sly.Progress(
             message=f"Cloning volumes from dataset: {dataset.name}",

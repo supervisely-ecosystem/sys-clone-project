@@ -4,24 +4,26 @@ from supervisely.api.module_api import ApiField
 from supervisely.video_annotation.key_id_map import KeyIdMap
 from supervisely.pointcloud_annotation.constants import OBJECT_KEY
 from uuid import UUID
+from typing import List, Tuple
+from supervisely import DatasetInfo
 
 import globals as g
 
 
-def clone(api: sly.Api, project_id, datasets, project_meta):
+def clone(
+    api: sly.Api,
+    project_id,
+    recreated_datasets: List[Tuple[DatasetInfo, DatasetInfo]],
+    project_meta,
+):
     key_id_map_initial = KeyIdMap()
     key_id_map_new = KeyIdMap()
     # Mapping from pointcloud ID -> {image_hash: image_id}
     pcl_to_hash_to_id = {}
     # Mapping from pointcloud ID -> {image_hash: [figures_json]}
     pcl_to_rimg_figures = {}
-    for dataset in datasets:
-        dst_dataset = api.dataset.create(
-            project_id=project_id,
-            name=g.DATASET_NAME or dataset.name,
-            description=dataset.description,
-            change_name_if_conflict=True,
-        )
+    for dataset_pair in recreated_datasets:
+        dataset, dst_dataset = dataset_pair
 
         pcd_episodes_infos = api.pointcloud_episode.get_list(dataset_id=dataset.id)
         ann_json = api.pointcloud_episode.annotation.download(dataset_id=dataset.id)
