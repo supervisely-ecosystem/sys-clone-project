@@ -205,23 +205,27 @@ def recreated(
     return list(recreate(api, src_project_id, dst_project_id))
 
 def recreate(
-        self, src_project_id: int, dst_project_id: int
-    ) -> Generator[Tuple[DatasetInfo, DatasetInfo], None, None]:
-       
-        dataset_map = {}
-        for parents, src_dataset_info in self._api.dataset.tree(src_project_id):
-            if len(parents) > 0:
-                parent = f"{os.path.sep}".join(parents)
-                parent_id = dataset_map.get(parent)
-            else:
-                # If the dataset is in the root of the project, parent_id should be None.
-                # And the path (key) will be just a name of the dataset.
-                parent = ""
-                parent_id = None
+    api: sly.Api, src_project_id: int, dst_project_id: int
+) -> Generator[Tuple[DatasetInfo, DatasetInfo], None, None]:
 
-            dst_dataset_info = self._api.dataset.create(
-                dst_project_id, src_dataset_info.name, parent_id=parent_id
-            )
-            dataset_map[os.path.join(parent, dst_dataset_info.name)] = dst_dataset_info.id
+    dataset_map = {}
+    for parents, src_dataset_info in api.dataset.tree(src_project_id):
+        if len(parents) > 0:
+            parent = f"{os.path.sep}".join(parents)
+            parent_id = dataset_map.get(parent)
+        else:
+            # If the dataset is in the root of the project, parent_id should be None.
+            # And the path (key) will be just a name of the dataset.
+            parent = ""
+            parent_id = None
 
-            yield src_dataset_info, dst_dataset_info
+        dst_dataset_info = api.dataset.create(
+            dst_project_id, src_dataset_info.name, parent_id=parent_id
+        )
+        dataset_map[os.path.join(parent, dst_dataset_info.name)] = dst_dataset_info.id
+
+        yield src_dataset_info, dst_dataset_info
+
+
+if __name__ == "__main__":
+    sly.main_wrapper("main", main, log_for_agent=False)
