@@ -1,5 +1,7 @@
 import supervisely as sly
-
+import os
+from supervisely import DatasetInfo
+from typing import List, Tuple, Generator
 import globals as g
 import functions as f
 from workflow import Workflow
@@ -105,7 +107,6 @@ def clone_data(api: sly.Api, task_id, context, state, app_logger):
         datasets_tree = api.dataset.get_tree(
             project.id
         )  # Dict[DatasetInfo, Dict[DatasetInfo, Dict[...]]] (recursively)
-        sly.logger.info(f"Datasets tree (source project): {f.get_datasets_tree_msg(datasets_tree)}")    
         if g.DATASET_ID:
 
             def _find_datasets_tree_by_id(datasets_tree, dataset_id):
@@ -119,8 +120,6 @@ def clone_data(api: sly.Api, task_id, context, state, app_logger):
 
             datasets_tree = _find_datasets_tree_by_id(datasets_tree, g.DATASET_ID)
 
-        log_msg = f.get_datasets_tree_msg(datasets_tree)
-        sly.logger.info("Datasets to clone:", extra={"datasets_tree": log_msg})
     elif g.DATASET_ID:
         datasets = [api.dataset.get_info_by_id(g.DATASET_ID)]
     else:
@@ -138,10 +137,11 @@ def clone_data(api: sly.Api, task_id, context, state, app_logger):
             similar_graphs=similar_graphs,
         )
     elif project_type == str(sly.ProjectType.VIDEOS):
+        recreated_datasets = recreated(api, project.id, dst_project.id)
         video.clone(
             api=api,
             project_id=dst_project.id,
-            datasets=datasets,
+            recreated_dataset=recreated_datasets,
             project_meta=project_meta,
         )
     elif project_type == str(sly.ProjectType.VOLUMES):
@@ -197,3 +197,31 @@ def main():
 
 if __name__ == "__main__":
     sly.main_wrapper("main", main, log_for_agent=False)
+
+
+def recreated(
+    api: sly.Api, src_project_id: int, dst_project_id: int
+) -> List[Tuple[DatasetInfo, DatasetInfo]]:
+    return list(recreate(api, src_project_id, dst_project_id))
+
+def recreate(
+        self, src_project_id: int, dst_project_id: int
+    ) -> Generator[Tuple[DatasetInfo, DatasetInfo], None, None]:
+       
+        dataset_map = {}
+        for parents, src_dataset_info in self._api.dataset.tree(src_project_id):
+            if len(parents) > 0:
+                parent = f"{os.path.sep}".join(parents)
+                parent_id = dataset_map.get(parent)
+            else:
+                # If the dataset is in the root of the project, parent_id should be None.
+                # And the path (key) will be just a name of the dataset.
+                parent = ""
+                parent_id = None
+
+            dst_dataset_info = self._api.dataset.create(
+                dst_project_id, src_dataset_info.name, parent_id=parent_id
+            )
+            dataset_map[os.path.join(parent, dst_dataset_info.name)] = dst_dataset_info.id
+
+            yield src_dataset_info, dst_dataset_info

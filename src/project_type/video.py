@@ -3,15 +3,16 @@ from supervisely.video_annotation.key_id_map import KeyIdMap
 
 import globals as g
 
-def clone(api: sly.Api, project_id, datasets, project_meta):
+def clone(api: sly.Api, project_id, recreated_dataset, project_meta):
     key_id_map = KeyIdMap()
-    for dataset in datasets:
-        dst_dataset = api.dataset.create(
-            project_id=project_id,
-            name=g.DATASET_NAME or dataset.name,
-            description=dataset.description,
-            change_name_if_conflict=True,
-        )
+    for dataset_pair in recreated_dataset:
+        dataset, dst_dataset = dataset_pair
+    # for dataset in datasets:
+    #     dst_dataset = api.dataset.create(
+    #         project_id=project_id,
+    #         name=g.DATASET_NAME or dataset.name,
+    #         description=dataset.description,
+    #         change_name_if_conflict=True,
         videos_infos = api.video.get_list(dataset_id=dataset.id)
         progress = sly.Progress(
             message=f"Cloning videos from dataset: {dataset.name}",
