@@ -11,6 +11,32 @@ import project_type.volume as volume
 import project_type.pointcloud as pointcloud
 import project_type.pointcloud_episodes as pointcloud_episodes
 
+def recreated(
+    api: sly.Api, src_project_id: int, dst_project_id: int
+) -> List[Tuple[DatasetInfo, DatasetInfo]]:
+    return list(recreate(api, src_project_id, dst_project_id))
+
+def recreate(
+    api: sly.Api, src_project_id: int, dst_project_id: int
+) -> Generator[Tuple[DatasetInfo, DatasetInfo], None, None]:
+
+    dataset_map = {}
+    for parents, src_dataset_info in api.dataset.tree(src_project_id):
+        if len(parents) > 0:
+            parent = f"{os.path.sep}".join(parents)
+            parent_id = dataset_map.get(parent)
+        else:
+            # If the dataset is in the root of the project, parent_id should be None.
+            # And the path (key) will be just a name of the dataset.
+            parent = ""
+            parent_id = None
+
+        dst_dataset_info = api.dataset.create(
+            dst_project_id, src_dataset_info.name, parent_id=parent_id
+        )
+        dataset_map[os.path.join(parent, dst_dataset_info.name)] = dst_dataset_info.id
+
+        yield src_dataset_info, dst_dataset_info
 
 @g.my_app.callback("clone-data")
 @sly.timeit
@@ -197,35 +223,6 @@ def main():
 
 if __name__ == "__main__":
     sly.main_wrapper("main", main, log_for_agent=False)
-
-
-def recreated(
-    api: sly.Api, src_project_id: int, dst_project_id: int
-) -> List[Tuple[DatasetInfo, DatasetInfo]]:
-    return list(recreate(api, src_project_id, dst_project_id))
-
-def recreate(
-    api: sly.Api, src_project_id: int, dst_project_id: int
-) -> Generator[Tuple[DatasetInfo, DatasetInfo], None, None]:
-
-    dataset_map = {}
-    for parents, src_dataset_info in api.dataset.tree(src_project_id):
-        if len(parents) > 0:
-            parent = f"{os.path.sep}".join(parents)
-            parent_id = dataset_map.get(parent)
-        else:
-            # If the dataset is in the root of the project, parent_id should be None.
-            # And the path (key) will be just a name of the dataset.
-            parent = ""
-            parent_id = None
-
-        dst_dataset_info = api.dataset.create(
-            dst_project_id, src_dataset_info.name, parent_id=parent_id
-        )
-        dataset_map[os.path.join(parent, dst_dataset_info.name)] = dst_dataset_info.id
-
-        yield src_dataset_info, dst_dataset_info
-
 
 if __name__ == "__main__":
     sly.main_wrapper("main", main, log_for_agent=False)
