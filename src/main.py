@@ -8,6 +8,9 @@ import project_type.video as video
 import project_type.volume as volume
 import project_type.pointcloud as pointcloud
 import project_type.pointcloud_episodes as pointcloud_episodes
+import os
+from typing import Generator, Tuple, List
+from supervisely import DatasetInfo
 
 
 @g.my_app.callback("clone-data")
@@ -121,9 +124,14 @@ def clone_data(api: sly.Api, task_id, context, state, app_logger):
         log_msg = f.get_datasets_tree_msg(datasets_tree)
         sly.logger.info("Datasets to clone:", extra={"datasets_tree": log_msg})
     elif g.DATASET_ID:
-        # TODO: Handle case when the only one dataset is selected.
-        # datasets = [api.dataset.get_info_by_id(g.DATASET_ID)]
-        pass
+        src_ds_info = api.dataset.get_info_by_id(g.DATASET_ID)
+        dst_ds_info = api.dataset.create(
+            project_id=dst_project.id,
+            name=g.DATASET_NAME or src_ds_info.name,
+            description=src_ds_info.description,
+            change_name_if_conflict=True,
+        )
+        recreated_datasets = [(src_ds_info, dst_ds_info)]
     else:
         # datasets = api.dataset.get_list(project.id, recursive=True)
         recreated_datasets = recreated(api, project.id, dst_project.id)
@@ -193,14 +201,20 @@ def main():
     g.my_app.run(initial_events=[{"command": "clone-data"}])
 
 
-import os
-from typing import Generator, Tuple, List
-from supervisely import DatasetInfo
-
-
 def recreated(
     api: sly.Api, src_project_id: int, dst_project_id: int
 ) -> List[Tuple[DatasetInfo, DatasetInfo]]:
+    """Converts generator recreate to list for convenience.
+
+    :param api: Supervisely API object
+    :type api: sly.Api
+    :param src_project_id: Source project ID
+    :type src_project_id: int
+    :param dst_project_id: Destination project ID
+    :type dst_project_id: int
+    :return: List of tuples of source and destination DatasetInfo objects
+    :rtype: List[Tuple[DatasetInfo, DatasetInfo]]
+    """
     return list(recreate(api, src_project_id, dst_project_id))
 
 
