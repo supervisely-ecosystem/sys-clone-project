@@ -125,8 +125,8 @@ def clone_data(api: sly.Api, task_id, context, state, app_logger):
     else:
         datasets = api.dataset.get_list(project.id, recursive=True)
 
-        log_msg = f.get_datasets_tree_msg(datasets)
-        sly.logger.info("Datasets to clone:", extra={"datasets_tree": log_msg}) 
+        #log_msg = f.get_datasets_tree_msg(datasets)
+        #sly.logger.info("Datasets to clone:", extra={"datasets_tree": log_msg}) 
 
     if project_type == str(sly.ProjectType.IMAGES):
         image.clone(
