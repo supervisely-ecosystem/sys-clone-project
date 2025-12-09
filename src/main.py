@@ -8,28 +8,23 @@ import project_type.video as video
 import project_type.volume as volume
 import project_type.pointcloud as pointcloud
 import project_type.pointcloud_episodes as pointcloud_episodes
-import os
-from typing import Generator, Tuple, List
-from supervisely import DatasetInfo
 
 
-@g.my_app.callback("clone-data")
-@sly.timeit
-def clone_data(api: sly.Api, task_id, context, state, app_logger):
-    project = api.project.get_info_by_id(g.PROJECT_ID)
-    workflow = Workflow(api)
+def clone_data():
+    project = g.api.project.get_info_by_id(g.PROJECT_ID)
+    workflow = Workflow(g.api)
     # -------------------------------------- Add Workflow Input -------------------------------------- #
     workflow.add_input(project.id)
     # ----------------------------------------------- - ---------------------------------------------- #
 
-    project_meta_json = api.project.get_meta(project.id, with_settings=True)
+    project_meta_json = g.api.project.get_meta(project.id, with_settings=True)
     project_meta = sly.ProjectMeta.from_json(data=project_meta_json)
     project_type = project_meta.project_type
 
     dst_project = None
     similar_graphs = []
     if g.DEST_PROJECT_ID:
-        dst_project = api.project.get_info_by_id(g.DEST_PROJECT_ID)
+        dst_project = g.api.project.get_info_by_id(g.DEST_PROJECT_ID)
         if dst_project is None:
             sly.logger.warning(
                 f"Destination project with id={g.DEST_PROJECT_ID} not found. "
@@ -44,7 +39,7 @@ def clone_data(api: sly.Api, task_id, context, state, app_logger):
         else:
             if project.type == "images" and dst_project:
                 # get destination project meta
-                dst_project_meta_json = api.project.get_meta(dst_project.id)
+                dst_project_meta_json = g.api.project.get_meta(dst_project.id)
                 dst_project_meta = sly.ProjectMeta.from_json(dst_project_meta_json)
                 # chech if there are any graph objects in source and destination project metas
                 src_obj_classes = project_meta.obj_classes
@@ -86,7 +81,7 @@ def clone_data(api: sly.Api, task_id, context, state, app_logger):
                                         similar_graphs.append(src_name)
             if len(similar_graphs) == 0:
                 try:
-                    api.project.merge_metas(project.id, dst_project.id)
+                    g.api.project.merge_metas(project.id, dst_project.id)
                 except Exception as e:
                     sly.logger.warn(
                         f"Can not merge meta of source project and destination project: {str(e)}. "
@@ -95,17 +90,17 @@ def clone_data(api: sly.Api, task_id, context, state, app_logger):
                     dst_project = None
 
     if dst_project is None:
-        dst_project = api.project.create(
+        dst_project = g.api.project.create(
             workspace_id=g.DEST_WORKSPACE_ID,
             name=g.PROJECT_NAME or project.name,
             type=project.type,
             description=project.description,
             change_name_if_conflict=True,
         )
-        api.project.update_meta(id=dst_project.id, meta=project_meta)
+        g.api.project.update_meta(id=dst_project.id, meta=project_meta)
 
     if project_type == str(sly.ProjectType.IMAGES):
-        datasets_tree = api.dataset.get_tree(
+        datasets_tree = g.api.dataset.get_tree(
             project.id
         )  # Dict[DatasetInfo, Dict[DatasetInfo, Dict[...]]] (recursively)
         if g.DATASET_ID:
@@ -124,8 +119,8 @@ def clone_data(api: sly.Api, task_id, context, state, app_logger):
         log_msg = f.get_datasets_tree_msg(datasets_tree)
         sly.logger.info("Datasets to clone:", extra={"datasets_tree": log_msg})
     elif g.DATASET_ID:
-        src_ds_info = api.dataset.get_info_by_id(g.DATASET_ID)
-        dst_ds_info = api.dataset.create(
+        src_ds_info = g.api.dataset.get_info_by_id(g.DATASET_ID)
+        dst_ds_info = g.api.dataset.create(
             project_id=dst_project.id,
             name=g.DATASET_NAME or src_ds_info.name,
             description=src_ds_info.description,
@@ -133,15 +128,15 @@ def clone_data(api: sly.Api, task_id, context, state, app_logger):
         )
         recreated_datasets = [(src_ds_info, dst_ds_info)]
     else:
-        # datasets = api.dataset.get_list(project.id, recursive=True)
-        recreated_datasets = api.project.recreate_structure(
+        # datasets = g.api.dataset.get_list(project.id, recursive=True)
+        recreated_datasets = g.api.project.recreate_structure(
             src_project_id=project.id, dst_project_id=dst_project.id
         )
 
     if project_type == str(sly.ProjectType.IMAGES):
         # * Using legacy dataset tree approach without recreate.
         image.clone(
-            api=api,
+            api=g.api,
             project_id=dst_project.id,
             src_ds_tree=datasets_tree,
             project_meta=project_meta,
@@ -149,26 +144,26 @@ def clone_data(api: sly.Api, task_id, context, state, app_logger):
         )
     elif project_type == str(sly.ProjectType.VIDEOS):
         video.clone(
-            api=api,
+            api=g.api,
             recreated_datasets=recreated_datasets,
             project_meta=project_meta,
         )
     elif project_type == str(sly.ProjectType.VOLUMES):
         volume.clone(
-            api=api,
+            api=g.api,
             recreated_datasets=recreated_datasets,
             project_meta=project_meta,
         )
     elif project_type == str(sly.ProjectType.POINT_CLOUDS):
         pointcloud.clone(
-            api=api,
+            api=g.api,
             project_id=dst_project.id,
             recreated_datasets=recreated_datasets,
             project_meta=project_meta,
         )
     elif project_type == str(sly.ProjectType.POINT_CLOUD_EPISODES):
         pointcloud_episodes.clone(
-            api=api,
+            api=g.api,
             project_id=dst_project.id,
             recreated_datasets=recreated_datasets,
             project_meta=project_meta,
@@ -176,16 +171,13 @@ def clone_data(api: sly.Api, task_id, context, state, app_logger):
     else:
         raise NotImplementedError(f"Unknown project type: {project_type}")
 
-    api.app.set_output_project(
+    g.api.app.set_output_project(
         task_id=g.TASK_ID, project_id=dst_project.id, project_name=dst_project.name
     )
 
     # -------------------------------------- Add Workflow Output ------------------------------------- #
     workflow.add_output(dst_project.id, g.DATASET_ID)
     # ----------------------------------------------- - ---------------------------------------------- #
-
-    g.my_app.stop()
-
 
 def main():
     sly.logger.info(
@@ -200,7 +192,7 @@ def main():
         },
     )
 
-    g.my_app.run(initial_events=[{"command": "clone-data"}])
+    sly.main_wrapper("clone_data", clone_data, log_for_agent=False)
 
 
 if __name__ == "__main__":
