@@ -1,7 +1,6 @@
 import os
 import sys
 import supervisely as sly
-from supervisely.app.v1.app_service import AppService
 from dotenv import load_dotenv
 
 app_root_directory = os.path.dirname(os.getcwd())
@@ -12,10 +11,9 @@ sly.logger.info(f'PYTHONPATH={os.environ.get("PYTHONPATH", "")}')
 
 if sly.is_development():
     load_dotenv("local.env")
-    load_dotenv("supervisely.env")
+    load_dotenv(os.path.expanduser("~/supervisely.env"))
 
-api: sly.Api = sly.Api.from_env()
-my_app: AppService = AppService(ignore_task_id=True)
+api = sly.Api.from_env()
 
 TASK_ID = os.environ.get("TASK_ID", None)
 
