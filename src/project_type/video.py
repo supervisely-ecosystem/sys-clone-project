@@ -15,9 +15,10 @@ def clone(
     api: sly.Api,
     recreated_datasets: List[Tuple[DatasetInfo, DatasetInfo]],
     project_meta,
+    dst_project_meta,
 ):
     key_id_map = KeyIdMap()
-    with sly.ApiContext(api=api, project_meta=project_meta):
+    with sly.ApiContext(api=api, project_meta=dst_project_meta):
         for dataset_pair in recreated_datasets:
             dataset, dst_dataset = dataset_pair
             videos_infos = api.video.get_list(dataset_id=dataset.id)
@@ -46,7 +47,7 @@ def clone(
                     continue
                 ann_json = api.video.annotation.download(video_id=video_info.id)
                 ann = sly.VideoAnnotation.from_json(
-                    data=ann_json, project_meta=project_meta, key_id_map=key_id_map
+                    data=ann_json, project_meta=dst_project_meta, key_id_map=key_id_map
                 )
                 new_video_infos.append(new_video_info)
 

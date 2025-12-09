@@ -39,7 +39,7 @@ def clone_data():
         else:
             if project.type == "images" and dst_project:
                 # get destination project meta
-                dst_project_meta_json = g.api.project.get_meta(dst_project.id)
+                dst_project_meta_json = g.api.project.get_meta(dst_project.id, with_settings=True)
                 dst_project_meta = sly.ProjectMeta.from_json(dst_project_meta_json)
                 # chech if there are any graph objects in source and destination project metas
                 src_obj_classes = project_meta.obj_classes
@@ -97,7 +97,10 @@ def clone_data():
             description=project.description,
             change_name_if_conflict=True,
         )
-        g.api.project.update_meta(id=dst_project.id, meta=project_meta)
+        dst_project_meta = g.api.project.update_meta(id=dst_project.id, meta=project_meta)
+    else:
+        dst_project_meta_json = g.api.project.get_meta(dst_project.id, with_settings=True)
+        dst_project_meta = sly.ProjectMeta.from_json(dst_project_meta_json)
 
     if project_type == str(sly.ProjectType.IMAGES):
         datasets_tree = g.api.dataset.get_tree(
@@ -147,6 +150,7 @@ def clone_data():
             api=g.api,
             recreated_datasets=recreated_datasets,
             project_meta=project_meta,
+            dst_project_meta=dst_project_meta,
         )
     elif project_type == str(sly.ProjectType.VOLUMES):
         volume.clone(
@@ -196,4 +200,4 @@ def main():
 
 
 if __name__ == "__main__":
-    sly.main_wrapper("main", main, log_for_agent=False)
+    sly.main_wrapper("main", main)

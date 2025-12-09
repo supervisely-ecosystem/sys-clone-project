@@ -73,7 +73,7 @@ def clone(api: sly.Api, project_id, src_ds_tree, project_meta: sly.ProjectMeta, 
         have_similar_graphs = False
         if len(similar_graphs) > 0:
             have_similar_graphs = True
-            dst_project_meta_json = api.project.get_meta(g.DEST_PROJECT_ID)
+            dst_project_meta_json = api.project.get_meta(g.DEST_PROJECT_ID, with_settings=True)
             dst_project_meta = sly.ProjectMeta.from_json(dst_project_meta_json)
             for obj_class in project_meta.obj_classes:
                 if not dst_project_meta.get_obj_class(obj_class.name):
