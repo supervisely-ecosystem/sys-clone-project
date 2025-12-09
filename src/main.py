@@ -192,7 +192,7 @@ def main():
         },
     )
 
-    sly.main_wrapper("clone_data", clone_data, log_for_agent=False)
+    clone_data()
 
 
 if __name__ == "__main__":
