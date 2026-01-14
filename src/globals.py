@@ -13,7 +13,7 @@ if sly.is_development():
     load_dotenv("local.env")
     load_dotenv(os.path.expanduser("~/supervisely.env"))
 
-api = sly.Api.from_env()
+api = sly.Api.from_env(ignore_task_id=True)
 
 TASK_ID = os.environ.get("TASK_ID", None)
 
