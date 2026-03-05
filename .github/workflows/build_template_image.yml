@@ -3,13 +3,14 @@ run-name: Build App Image for "${{ github.event.repository.name }}"
 
 on:
   workflow_dispatch:
-    tag_version:
-      description: "Tag version to build image for"
-      required: false
-    cve_checks:
-      description: "Run CVE checks on the built image before pushing to registry"
-      required: false
-      default: false
+    inputs:
+      tag_version:
+        description: "Tag version to build image for"
+        required: false
+      cve_checks:
+        description: "Run CVE checks on the built image before pushing to registry"
+        required: false
+        default: false
 jobs:
   build-image:
     uses: supervisely-ecosystem/workflows/.github/workflows/build_image_from_template.yml@per-app-dockerimages
