@@ -18,4 +18,4 @@ jobs:
     with:
       image_name: "${{ github.event.repository.name }}"
       tag_version: "${{ github.event.inputs.tag_version }}"
-      cve_checks: "${{ github.event.inputs.cve_checks }}"
+      cve_checks: ${{ github.event.inputs.cve_checks }}
