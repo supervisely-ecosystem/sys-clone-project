@@ -10,6 +10,7 @@ on:
       cve_checks:
         description: "Run CVE checks on the built image before pushing to registry"
         required: false
+        type: boolean
         default: false
 jobs:
   build-image:
