@@ -22,4 +22,4 @@ jobs:
       DOCKERHUB_TOKEN: "${{ secrets.DOCKERHUB_TOKEN }}"
     with:
       release_tag: "${{ github.event.inputs.image_tag }}"
-      push_latest: ${{ github.event.inputs.push_latest }}
+      push_latest: ${{ inputs.push_latest }}
