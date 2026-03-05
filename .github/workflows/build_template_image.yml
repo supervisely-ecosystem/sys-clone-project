@@ -8,7 +8,7 @@ on:
         description: "Tag to push (e.g. test-123)"
         required: true
         default: "test-manual"
-      push_latest:
+      latest_tag:
         description: "Also push the :latest tag"
         required: false
         type: boolean
@@ -19,4 +19,4 @@ jobs:
     uses: supervisely-ecosystem/workflows/.github/workflows/build_image_from_template.yml@per-app-dockerimages
     with:
       image_name: "${{ github.event.inputs.image_tag }}"
-      push_latest: ${{ inputs.push_latest }}
+      latest_tag: ${{ inputs.latest_tag }}
