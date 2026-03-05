@@ -8,6 +8,11 @@ on:
         description: "Tag to push (e.g. test-123)"
         required: true
         default: "test-manual"
+      push_latest:
+        description: "Also push the :latest tag"
+        required: false
+        type: boolean
+        default: false
 
 jobs:
   build-image:
@@ -17,4 +22,4 @@ jobs:
       DOCKERHUB_TOKEN: "${{ secrets.DOCKERHUB_TOKEN }}"
     with:
       image_tag: "${{ github.event.inputs.image_tag }}"
-      push_latest: true
+      push_latest: "${{ github.event.inputs.push_latest }}"
