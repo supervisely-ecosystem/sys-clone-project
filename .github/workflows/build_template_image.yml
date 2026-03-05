@@ -17,9 +17,6 @@ on:
 jobs:
   build-image:
     uses: supervisely-ecosystem/workflows/.github/workflows/build_image_from_template.yml@per-app-dockerimages
-    secrets:
-      DOCKERHUB_USERNAME: "${{ secrets.DOCKERHUB_USERNAME }}"
-      DOCKERHUB_TOKEN: "${{ secrets.DOCKERHUB_TOKEN }}"
     with:
-      image_tag: "${{ github.event.inputs.image_tag }}"
+      image_name: "${{ github.event.inputs.image_tag }}"
       push_latest: ${{ inputs.push_latest }}
