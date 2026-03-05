@@ -1,22 +1,10 @@
 name: Build App Image From Template (Release)
-run-name: Build App Image for "${{ github.event.inputs.image_tag }}"
+run-name: Build App Image for "${{ github.event.repository.name }}"
 
 on:
   workflow_dispatch:
-    inputs:
-      image_tag:
-        description: "Tag to push (e.g. test-123)"
-        required: true
-        default: "test-manual"
-      latest_tag:
-        description: "Also push the :latest tag"
-        required: false
-        type: boolean
-        default: false
-
 jobs:
   build-image:
     uses: supervisely-ecosystem/workflows/.github/workflows/build_image_from_template.yml@per-app-dockerimages
     with:
-      image_name: "${{ github.event.inputs.image_tag }}"
-      latest_tag: ${{ inputs.latest_tag }}
+      image_name: "${{ github.event.repository.name }}"
