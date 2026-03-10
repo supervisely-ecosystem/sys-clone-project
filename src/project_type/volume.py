@@ -31,7 +31,7 @@ def clone(
                     meta=volume_info.meta,
                 )
             else:
-                sly.logger.warn(f"{volume_info.name} have no hash. Item will be skipped.")
+                sly.logger.warning(f"{volume_info.name} have no hash. Item will be skipped.")
                 continue
 
             ann_json = api.volume.annotation.download(volume_id=volume_info.id)

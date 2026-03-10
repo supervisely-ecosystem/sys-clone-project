@@ -122,7 +122,7 @@ def clone(
                             figures_json=figures_payload, dataset_id=dst_dataset.id
                         )
             else:
-                sly.logger.warn(f"{pcd_info.name} have no hash. Item will be skipped.")
+                sly.logger.warning(f"{pcd_info.name} have no hash. Item will be skipped.")
                 continue
 
             progress.iter_done_report()

@@ -105,7 +105,7 @@ def clone(
                                 img_hash
                             ] = img_id
             else:
-                sly.logger.warn(f"{pcd_episode_info.name} have no hash. Item will be skipped.")
+                sly.logger.warning(f"{pcd_episode_info.name} have no hash. Item will be skipped.")
                 continue
 
             progress.iter_done_report()

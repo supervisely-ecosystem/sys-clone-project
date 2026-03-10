@@ -83,7 +83,7 @@ def clone_data():
                 try:
                     g.api.project.merge_metas(project.id, dst_project.id)
                 except Exception as e:
-                    sly.logger.warn(
+                    sly.logger.warning(
                         f"Can not merge meta of source project and destination project: {str(e)}. "
                         f"New destination project will be created."
                     )
