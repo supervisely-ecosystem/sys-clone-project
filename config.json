@@ -32,11 +32,13 @@
       "point_cloud_project",
       "volumes_project",
       "point_cloud_episodes_project",
+      "meshes_project",
       "images_dataset",
       "videos_dataset",
       "point_cloud_dataset",
       "volumes_dataset",
-      "point_cloud_episodes_dataset"
+      "point_cloud_episodes_dataset",
+      "meshes_dataset"
     ]
   },
   "poster": "https://user-images.githubusercontent.com/48913536/199025849-6e3fdfd5-3f45-463e-b7ea-71c22f42134d.png"

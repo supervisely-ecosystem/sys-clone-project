@@ -8,6 +8,7 @@ import project_type.video as video
 import project_type.volume as volume
 import project_type.pointcloud as pointcloud
 import project_type.pointcloud_episodes as pointcloud_episodes
+import project_type.mesh as mesh
 
 
 def clone_data():
@@ -169,6 +170,12 @@ def clone_data():
         pointcloud_episodes.clone(
             api=g.api,
             project_id=dst_project.id,
+            recreated_datasets=recreated_datasets,
+            project_meta=project_meta,
+        )
+    elif project_type == str(sly.ProjectType.MESHES):
+        mesh.clone(
+            api=g.api,
             recreated_datasets=recreated_datasets,
             project_meta=project_meta,
         )
