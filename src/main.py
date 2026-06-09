@@ -177,7 +177,6 @@ def clone_data():
         mesh.clone(
             api=g.api,
             recreated_datasets=recreated_datasets,
-            project_meta=project_meta,
         )
     else:
         raise NotImplementedError(f"Unknown project type: {project_type}")
