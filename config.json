@@ -23,7 +23,7 @@
   "task_location": "workspace_tasks",
   "isolate": true,
   "headless": true,
-  "icon": "https://img.icons8.com/color/96/000000/copy--v1.png",
+  "icon": "https://github.com/supervisely-ecosystem/sys-clone-project/releases/download/v1.1.6/sys-clone-project-icon.jpg",
   "icon_background": "#FFFFFF",
   "context_menu": {
     "target": [
@@ -41,5 +41,5 @@
       "meshes_dataset"
     ]
   },
-  "poster": "https://user-images.githubusercontent.com/48913536/199025849-6e3fdfd5-3f45-463e-b7ea-71c22f42134d.png"
+  "poster": "https://github.com/supervisely-ecosystem/sys-clone-project/releases/download/v1.1.6/sys-clone-project-poster.jpg"
 }
