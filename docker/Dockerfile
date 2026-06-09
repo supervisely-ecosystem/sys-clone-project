@@ -5,6 +5,6 @@ FROM supervisely/base-py-sdk-hardened:6.73.580
 
 # The pinned source package reads RELEASE_VERSION first; set it to bypass the
 # setup.py path that shells out to `git` (git is absent in the hardened base).
-RUN RELEASE_VERSION="0.0.0+41e0e7e" \
+RUN RELEASE_VERSION="0.0.0+ca91828" \
     python3 -m pip install --no-cache-dir --force-reinstall --no-deps \
-    "https://github.com/supervisely/supervisely/archive/41e0e7ee83739c6ae78e4c51c938c6e497944a77.tar.gz"
+    "https://github.com/supervisely/supervisely/archive/ca91828ac6275fae2351a361a041f0dd66b485f1.tar.gz"
