@@ -4,7 +4,7 @@ set -euo pipefail
 # Build and push the TEMPORARY test image for Sys Clone Project:
 # latest hardened base + the unreleased mesh SDK branch installed on top.
 # Must match config.json -> "docker_image".
-IMAGE="supervisely/sys-clone-project:0.0.1-test-hardened"
+IMAGE="supervisely/sys-clone-project:0.0.2-test-hardened"
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
