@@ -13,8 +13,8 @@
     "meshes"
   ],
   "description": "Clone project or dataset to selected workspace or project, works with all project types: images, videos, 3d, dicom, meshes",
-  "docker_image": "supervisely/sys-clone-project:0.0.3-test-hardened",
-  "instance_version": "6.16.19",
+  "docker_image": "supervisely/base-py-sdk-hardened:6.74.0",
+  "instance_version": "6.17.0",
   "main_script": "src/main.py",
   "modal_template": "src/modal.html",
   "modal_template_state": {
