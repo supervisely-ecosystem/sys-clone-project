@@ -9,11 +9,12 @@
     "images",
     "videos",
     "pointclouds",
-    "dicom"
+    "dicom",
+    "meshes"
   ],
-  "description": "Clone project or dataset to selected workspace or project, works with all project types: images / videos / 3d / dicom",
-  "docker_image": "supervisely/base-py-sdk-hardened:6.73.577",
-  "instance_version": "6.16.19",
+  "description": "Clone project or dataset to selected workspace or project, works with all project types: images, videos, 3d, dicom, meshes",
+  "docker_image": "supervisely/base-py-sdk-hardened:6.74.0",
+  "instance_version": "6.17.0",
   "main_script": "src/main.py",
   "modal_template": "src/modal.html",
   "modal_template_state": {
@@ -23,7 +24,7 @@
   "task_location": "workspace_tasks",
   "isolate": true,
   "headless": true,
-  "icon": "https://img.icons8.com/color/96/000000/copy--v1.png",
+  "icon": "https://github.com/supervisely-ecosystem/sys-clone-project/releases/download/v1.1.6/sys-clone-project-icon.jpg",
   "icon_background": "#FFFFFF",
   "context_menu": {
     "target": [
@@ -32,12 +33,14 @@
       "point_cloud_project",
       "volumes_project",
       "point_cloud_episodes_project",
+      "meshes_project",
       "images_dataset",
       "videos_dataset",
       "point_cloud_dataset",
       "volumes_dataset",
-      "point_cloud_episodes_dataset"
+      "point_cloud_episodes_dataset",
+      "meshes_dataset"
     ]
   },
-  "poster": "https://user-images.githubusercontent.com/48913536/199025849-6e3fdfd5-3f45-463e-b7ea-71c22f42134d.png"
+  "poster": "https://github.com/supervisely-ecosystem/sys-clone-project/releases/download/v1.1.6/sys-clone-project-poster.jpg"
 }
