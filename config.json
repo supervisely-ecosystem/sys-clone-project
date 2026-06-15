@@ -24,6 +24,7 @@
   "task_location": "workspace_tasks",
   "isolate": true,
   "headless": true,
+  "icon_cover": true,
   "icon": "https://github.com/supervisely-ecosystem/sys-clone-project/releases/download/v1.1.6/sys-clone-project-icon.jpg",
   "icon_background": "#FFFFFF",
   "context_menu": {
