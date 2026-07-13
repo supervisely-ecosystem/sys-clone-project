@@ -4,11 +4,35 @@ import progress
 import globals as g
 
 
+def _drop_corrupted_tags(ann_json):
+    """Remove tag entries with no "name" (e.g. tags whose tag meta was deleted
+    from the project but the tag instance itself was left enabled) so a single
+    corrupted image doesn't crash the whole clone with KeyError('name').
+    Returns the cleaned annotation json and a list of dropped tag ids."""
+
+    dropped_tag_ids = []
+
+    def _filter(tags):
+        clean = []
+        for tag_json in tags or []:
+            if not tag_json.get("name"):
+                dropped_tag_ids.append(tag_json.get("tagId"))
+                continue
+            clean.append(tag_json)
+        return clean
+
+    ann_json["tags"] = _filter(ann_json.get("tags"))
+    for label_json in ann_json.get("objects", []):
+        label_json["tags"] = _filter(label_json.get("tags"))
+    return ann_json, dropped_tag_ids
+
+
 def clone(api: sly.Api, project_id, src_ds_tree, project_meta: sly.ProjectMeta, similar_graphs):
     keep_classes = []
     remove_classes = []
     meta_has_any_shapes = False
     src_dst_ds_id_map = {}
+    corrupted_tags_stats = {}  # tagId -> list of source image ids with that corrupted tag
 
     for obj_cls in project_meta.obj_classes:
         if obj_cls.geometry_type == sly.AnyGeometry:
@@ -83,7 +107,12 @@ def clone(api: sly.Api, project_id, src_ds_tree, project_meta: sly.ProjectMeta, 
         for batch_ids, batch_new_ids in zip(sly.batched(images_ids), sly.batched(new_images_ids)):
             batch_ann_jsons = api.annotation.download_json_batch(src_ds_id, batch_ids)
             checked_ann_jsons = []
+            batch_corrupted = {}  # tagId -> list of image ids in this batch
             for ann_json, img_id, new_img_id in zip(batch_ann_jsons, batch_ids, batch_new_ids):
+                ann_json, dropped_tag_ids = _drop_corrupted_tags(ann_json)
+                for tag_id in dropped_tag_ids:
+                    corrupted_tags_stats.setdefault(tag_id, []).append(img_id)
+                    batch_corrupted.setdefault(tag_id, []).append(img_id)
                 # * do not remove: convert to sly and back to json to fix possible geometric errors
                 ann = sly.Annotation.from_json(ann_json, project_meta)
                 # * filter labels with Cuboid geometry
@@ -137,6 +166,16 @@ def clone(api: sly.Api, project_id, src_ds_tree, project_meta: sly.ProjectMeta, 
                             new_labels.append(label)
                     ann = ann.clone(labels=new_labels)
                 checked_ann_jsons.append(ann.to_json())
+            if batch_corrupted:
+                sly.logger.debug(
+                    "Corrupted tags (no name in JSON) were skipped in this batch.",
+                    extra={
+                        "dataset_id": src_ds_id,
+                        "corrupted_tags": {
+                            str(tag_id): img_ids for tag_id, img_ids in batch_corrupted.items()
+                        },
+                    },
+                )
             api.annotation.upload_jsons(
                 img_ids=batch_new_ids, ann_jsons=checked_ann_jsons, progress_cb=progress_cb
             )
@@ -154,3 +193,13 @@ def clone(api: sly.Api, project_id, src_ds_tree, project_meta: sly.ProjectMeta, 
 
     # process datasets tree
     _process_datasets_tree(src_ds_tree)
+
+    for tag_id, img_ids in corrupted_tags_stats.items():
+        examples = ", ".join(str(img_id) for img_id in img_ids[:10])
+        if len(img_ids) > 10:
+            examples += f", ... (and {len(img_ids) - 10} more)"
+        sly.logger.warning(
+            f"Found {len(img_ids)} images with a corrupted tag (tagId={tag_id}, no name in JSON) - "
+            f"the tag meta was likely deleted from the project. "
+            f"These tags were skipped during clone. Example image IDs: {examples}"
+        )
